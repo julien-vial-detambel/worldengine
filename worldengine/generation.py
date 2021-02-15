@@ -142,14 +142,14 @@ def harmonize_ocean(ocean, elevation, ocean_level):
 
 def sea_depth(world, sea_level):
 
-    # a dynamic programming approach to gather how far the next land is 
+    # a dynamic programming approach to gather how far the next land is
     # from a given coordinate up to a maximum distance of max_radius
     # result is 0 for land coordinates and -1 for coordinates further than
     # max_radius away from land
     # there might be even faster ways but it does the trick
 
     def next_land_dynamic(ocean, max_radius=5):
-    
+
         next_land = numpy.full(ocean.shape, -1, int)
 
         # non ocean tiles are zero distance away from next land
@@ -170,7 +170,7 @@ def sea_depth(world, sea_level):
                                     next_land[ny,nx] = dist + 1
         return next_land
 
-    # We want to multiply the raw sea_depth by one of these factors 
+    # We want to multiply the raw sea_depth by one of these factors
     # depending on the distance from the next land
     # possible TODO: make this a parameter
     factors = [0.0, 0.3, 0.5, 0.7, 0.9]
@@ -255,12 +255,16 @@ def generate_world(w, step):
 
     if get_verbose():
         print('')  # empty line
-        print('Biome obtained:')
+        print('Biome obtained (% of total surface):')
 
-    for cl in biome_cm.keys():
+    cl_sorted = sorted(biome_cm, key=biome_cm.get, reverse=True)
+    for cl in cl_sorted:
         count = biome_cm[cl]
         if get_verbose():
-            print(" %30s = %7i" % (str(cl), count))
+            distrib = ' %30s = %.3f%%' % (str(cl), float(count) / sum(biome_cm.values()) * 100)
+            if cl != 'ocean':
+                distrib += ' (%.3f%% emerged surface)' % (float(count) / (sum(biome_cm.values()) - biome_cm['ocean']) * 100)
+            print(distrib)
 
     IcecapSimulation().execute(w, seed_dict['IcecapSimulation'])  # makes use of temperature-map
 

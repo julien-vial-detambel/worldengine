@@ -332,8 +332,8 @@ def main():
     g_generate.add_argument('--ice', dest='icecaps_map',
                             action="store_true", help="generate ice caps map")
     # exposing axial_tilt
-    g_generate.add_argument('-ax', '--axial_tilt', dest='axial_tilt', choices=range(-180, 181),
-                            metavar="[-180-180]", help='Axial tilt (-180-180) denoting the world obliquity. Default is 25.', default=25, type=int)
+    g_generate.add_argument('-ax', '--axial_tilt', dest='axial_tilt', choices=range(-90, 91),
+                            metavar="[-90-90]", help='Axial tilt (-180-180) denoting the world obliquity. Default is 25.', default=25, type=int)
 
     # -----------------------------------------------------
     g_ancient_map = parser.add_argument_group(
