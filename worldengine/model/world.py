@@ -86,7 +86,7 @@ class World(object):
     each cell.
     """
 
-    def __init__(self, name, size, seed, generation_params,
+    def __init__(self, name, size, seed, axial_tilt, generation_params,
                  temps=[0.874, 0.765, 0.594, 0.439, 0.366, 0.124],
                  humids = [.941, .778, .507, .236, 0.073, .014, .002],
                  gamma_curve=1.25, curve_offset=.2):
@@ -97,6 +97,7 @@ class World(object):
         self.humids = humids
         self.gamma_curve = gamma_curve
         self.curve_offset = curve_offset
+        self.axial_tilt = axial_tilt
 
         self.generation_params = generation_params
 

@@ -31,10 +31,10 @@ STEPS = 'plates|precipitations|full'
 
 
 def generate_world(world_name, width, height, seed, num_plates, output_dir,
-                   step, ocean_level, temps, humids, world_format='protobuf',
+                   step, ocean_level, temps, humids, axial_tilt, world_format='protobuf',
                    gamma_curve=1.25, curve_offset=.2, fade_borders=True,
                    verbose=True, black_and_white=False):
-    w = world_gen(world_name, width, height, seed, temps, humids, num_plates, ocean_level,
+    w = world_gen(world_name, width, height, axial_tilt, seed, temps, humids, num_plates, ocean_level,
                   step, gamma_curve=gamma_curve, curve_offset=curve_offset,
                   fade_borders=fade_borders, verbose=verbose)
 
@@ -104,8 +104,7 @@ def draw_icecaps_map(world, filename):
     print("+ icecap map generated in '%s'" % filename)
 
 
-def generate_plates(seed, world_name, output_dir, width, height,
-                    num_plates=10):
+def generate_plates(seed, world_name, output_dir, width, height, axial_tilt, num_plates=10):
     """
     Eventually this method should be invoked when generation is called at
     asked to stop at step "plates", it should not be a different operation
@@ -114,13 +113,13 @@ def generate_plates(seed, world_name, output_dir, width, height,
     :param output_dir:
     :param width:
     :param height:
+    :param axial_tilt:
     :param num_plates:
     :return:
     """
-    elevation, plates = generate_plates_simulation(seed, width, height,
-                                                   num_plates=num_plates)
+    elevation, plates = generate_plates_simulation(seed, width, height, axial_tilt, num_plates=num_plates)
 
-    world = World(world_name, Size(width, height), seed,
+    world = World(world_name, Size(width, height), seed, axial_tilt,
                   GenerationParameters(num_plates, -1.0, "plates"))
     world.elevation = (numpy.array(elevation).reshape(height, width), None)
     world.plates = numpy.array(plates, dtype=numpy.uint16).reshape(height, width)
@@ -298,7 +297,7 @@ def main():
                             "world modes")
     g_generate.add_argument('-r', '--rivers', dest='rivers_map',
                             action="store_true", help="generate rivers map")
-    g_generate.add_argument('--gs', '--grayscale-heightmap',
+    g_generate.add_argument('-gs', '--grayscale-heightmap',
                             dest='grayscale_heightmap', action="store_true",
                             help='produce a grayscale heightmap')
     g_generate.add_argument('--ocean_level', dest='ocean_level', type=float,
@@ -332,6 +331,9 @@ def main():
                             action="store_true", help="generate satellite map")
     g_generate.add_argument('--ice', dest='icecaps_map',
                             action="store_true", help="generate ice caps map")
+    # exposing axial_tilt
+    g_generate.add_argument('-ax', '--axial_tilt', dest='axial_tilt', choices=range(-180, 181),
+                            metavar="[-180-180]", help='Axial tilt (-180-180) denoting the world obliquity. Default is 25.', default=25, type=int)
 
     # -----------------------------------------------------
     g_ancient_map = parser.add_argument_group(
@@ -516,6 +518,7 @@ def main():
             print(' humidity ranges      : %s' % args.humids)
         print(' gamma value          : %s' % args.gv)
         print(' gamma offset         : %s' % args.go)
+        print(' axial tile           : %s' % args.axial_tilt)
     if operation == 'ancient_map':
         print(' operation              : %s generation' % operation)
         print(' resize factor          : %i' % args.resize_factor)
@@ -554,7 +557,7 @@ def main():
 
         world = generate_world(world_name, args.width, args.height,
                                seed, args.number_of_plates, args.output_dir,
-                               step, args.ocean_level, temps, humids, world_format,
+                               step, args.ocean_level, temps, humids, args.axial_tilt, world_format,
                                gamma_curve=args.gv, curve_offset=args.go,
                                fade_borders=args.fade_borders,
                                verbose=args.verbose, black_and_white=args.black_and_white)
@@ -579,7 +582,7 @@ def main():
         print('starting (it could take a few minutes) ...')
 
         generate_plates(seed, world_name, args.output_dir, args.width,
-                        args.height, num_plates=args.number_of_plates)
+                        args.height, args.axial_tilt, num_plates=args.number_of_plates)
 
     elif operation == 'ancient_map':
         print('')  # empty line

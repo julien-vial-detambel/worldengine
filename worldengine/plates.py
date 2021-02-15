@@ -10,7 +10,7 @@ from worldengine.generation import Step, add_noise_to_elevation, center_land, ge
 from worldengine.model.world import World, Size, GenerationParameters
 
 
-def generate_plates_simulation(seed, width, height, sea_level=0.65,
+def generate_plates_simulation(seed, width, height, axial_tilt, sea_level=0.65,
                                erosion_period=60, folding_ratio=0.02,
                                aggr_overlap_abs=1000000, aggr_overlap_rel=0.33,
                                cycle_count=2, num_plates=10,
@@ -35,16 +35,16 @@ def generate_plates_simulation(seed, width, height, sea_level=0.65,
     return hm, pm
 
 
-def _plates_simulation(name, width, height, seed, temps=
+def _plates_simulation(name, width, height, axial_tilt, seed, temps=
                        [.874, .765, .594, .439, .366, .124], humids=
                        [.941, .778, .507, .236, 0.073, .014, .002], gamma_curve=1.25,
                        curve_offset=.2, num_plates=10, ocean_level=1.0,
                        step=Step.full(), verbose=get_verbose()):
-    e_as_array, p_as_array = generate_plates_simulation(seed, width, height,
+    e_as_array, p_as_array = generate_plates_simulation(seed, width, height, axial_tilt,
                                                         num_plates=num_plates,
                                                         verbose=verbose)
 
-    world = World(name, Size(width, height), seed,
+    world = World(name, Size(width, height), seed, axial_tilt,
                   GenerationParameters(num_plates, ocean_level, step),
                   temps, humids, gamma_curve, curve_offset)
     world.elevation = (numpy.array(e_as_array).reshape(height, width), None)
@@ -52,13 +52,13 @@ def _plates_simulation(name, width, height, seed, temps=
     return world
 
 
-def world_gen(name, width, height, seed, temps=[.874, .765, .594, .439, .366, .124],
+def world_gen(name, width, height, axial_tilt, seed, temps=[.874, .765, .594, .439, .366, .124],
               humids=[.941, .778, .507, .236, 0.073, .014, .002], num_plates=10,
               ocean_level=1.0, step=Step.full(), gamma_curve=1.25, curve_offset=.2,
               fade_borders=True, verbose=get_verbose()):
     if verbose:
         start_time = time.time()
-    world = _plates_simulation(name, width, height, seed, temps, humids, gamma_curve,
+    world = _plates_simulation(name, width, height, axial_tilt, seed, temps, humids, gamma_curve,
                                curve_offset, num_plates, ocean_level, step, verbose)
 
     center_land(world)
