@@ -86,7 +86,7 @@ def _build_biome_group_masks(world, factor):
 
         for biome in group.__subclasses__():
             group_mask[world.biome==_un_camelize(biome.__name__)] += 1.0
-               
+
         group_mask[group_mask>0] = count_neighbours(group_mask)[group_mask>0]
 
         group_mask[group_mask<5.000000001] = 0.0
@@ -227,7 +227,7 @@ def _draw_warm_temperate_forest(pixels, x, y, w, h):
     c = (0, 96, 0, 255)
     c2 = (0, 192, 0, 255)
     _draw_forest_pattern2(pixels, x, y, c, c2)
-    
+
 
 def _draw_temperate_forest1(pixels, x, y, w, h):
     c = (0, 64, 0, 255)
@@ -257,12 +257,12 @@ def _draw_cool_desert(pixels, x, y, w, h):
     c = (72, 72, 53, 255)
     # c2 = (219, 220, 200, 255)  # TODO: not used?
     _draw_desert_pattern(pixels, x, y, c)
-    
-    
+
+
 def _draw_hot_desert(pixels, x, y, w, h):
     c = (72, 72, 53, 255)
     # c2 = (219, 220, 200, 255)  # TODO: not used?
-    _draw_desert_pattern(pixels, x, y, c)  
+    _draw_desert_pattern(pixels, x, y, c)
 
 
 def _draw_tundra(pixels, x, y, w, h):
@@ -355,183 +355,4 @@ def _draw_a_mountain(pixels, x, y, w=3, h=3):
     for mody in range(-h, h + 1):
         bottomness = (float(mody + h) / 2.0) / w
         modx = int(bottomness * w)
-        pixels[y + mody, x + modx] = mcr      
-
-
-def draw_ancientmap(world, target, resize_factor=1,
-                    sea_color=(212, 198, 169, 255),
-                    draw_biome = True, draw_rivers = True, draw_mountains = True,
-                    draw_outer_land_border = False, verbose=get_verbose()):
-    rng = numpy.random.RandomState(world.seed)  # create our own random generator
-
-    if verbose:
-        start_time = time.time()
-
-    land_color = (
-        181, 166, 127, 255)  # TODO: Put this in the argument list too??
-
-    scaled_ocean = world.ocean.repeat(resize_factor, 0).repeat(resize_factor, 1)
-    
-    borders = numpy.zeros((resize_factor * world.height, resize_factor * world.width), bool)
-    borders[count_neighbours(scaled_ocean) > 0] = True
-    borders[scaled_ocean] = False
-
-    # cache neighbours count at different radii
-    border_neighbours = {}
-
-    border_neighbours[6] = numpy.rint(count_neighbours(borders, 6))
-    border_neighbours[9] = numpy.rint(count_neighbours(borders, 9))
-
-    if draw_outer_land_border:
-        inner_borders = borders
-        outer_borders = None
-
-        for i in range(2):
-            _outer_borders =  numpy.zeros((resize_factor * world.height, resize_factor * world.width), bool)
-            _outer_borders[count_neighbours(inner_borders) > 0] = True
-            _outer_borders[inner_borders] = False
-            _outer_borders[numpy.logical_not(scaled_ocean)] = False
-            outer_borders = _outer_borders
-            inner_borders = outer_borders
-
-    if draw_mountains:
-        mountains_mask = _find_mountains_mask(world, resize_factor)
-
-    if draw_biome:
-        biome_masks = _build_biome_group_masks(world, resize_factor)
-
-        def _draw_biome(name, _func, w, h, r, _alt_func = None):
-            if verbose:
-                start_time = time.time()
-
-            for y in range(resize_factor * world.height):
-                for x in range(resize_factor * world.width):
-                    if biome_masks[name][y, x] > 0:
-                        if r == 0 or border_neighbours[r][y,x] <= 2:
-                            if _alt_func is not None and rng.random_sample() > .5:
-                                _alt_func(target, x, y, w, h)
-                            else:
-                                _func(target, x, y, w, h)
-                            biome_masks[name][y-r:y+r+1,x-r:x+r+1] = 0.0
-
-            if verbose:
-                elapsed_time = time.time() - start_time
-                print(
-                    "...drawing_functions.draw_ancientmap: " + name +
-                    " Elapsed time " + str(elapsed_time) + " seconds.")
-
-    if verbose:
-        elapsed_time = time.time() - start_time
-        print(
-            "...drawing_functions.draw_oldmap_on_pixel: init Elapsed time " +
-            str(elapsed_time) + " seconds.")
-        sys.stdout.flush()
-
-    if verbose:
-        start_time = time.time()
-
-    border_color = (0, 0, 0, 255)
-    outer_border_color = gradient(0.5, 0, 1.0, rgba_to_rgb(border_color), rgba_to_rgb(sea_color))
-
-    # start in low resolution
-    num_channels = 4
-    channels = numpy.zeros((num_channels, world.height, world.width), int)
-
-    for c in range(num_channels):
-        channels[c] = land_color[c]
-        channels[c][world.ocean] = sea_color[c]
-
-    # now go full resolution
-    channels = channels.repeat(resize_factor, 1).repeat(resize_factor, 2)
-
-    if draw_outer_land_border:
-        for c in range(num_channels):
-            channels[c][outer_borders] = outer_border_color[c]
-
-    for c in range(num_channels):
-            channels[c][borders] = border_color[c]
-
-    if verbose:
-        elapsed_time = time.time() - start_time
-        print(
-            "...drawing_functions.draw_oldmap_on_pixel: color ocean " +
-            "Elapsed time " + str(elapsed_time) + " seconds.")
-
-    if verbose:
-        start_time = time.time()
-
-    # don't anti-alias the alpha channel
-    for c in range(num_channels-1):
-        channels[c] = anti_alias_channel(channels[c], 1)
-
-    
-    # switch from channel major storage to pixel major storage
-    for c in range(num_channels):
-        target[:,:,c] = channels[c,:,:]
-
-
-    if verbose:
-        elapsed_time = time.time() - start_time
-        print(
-            "...drawing_functions.draw_oldmap_on_pixel: anti alias " +
-            "Elapsed time " + str(elapsed_time) + " seconds.")
-
-    if draw_biome:
-        # Draw glacier
-        if verbose:
-            start_time = time.time()
-        for y in range(resize_factor * world.height):
-            for x in range(resize_factor * world.width):
-                if not borders[y, x] and world.is_iceland(
-                        (int(x / resize_factor), int(y / resize_factor))):
-                    _draw_glacier(target, x, y)
-        if verbose:
-            elapsed_time = time.time() - start_time
-            print(
-                "...drawing_functions.draw_oldmap_on_pixel: draw glacier " +
-                "Elapsed time " + str(elapsed_time) + " seconds.")
-       
-        _draw_biome('tundra', _draw_tundra, 0, 0, 0) 
-        _draw_biome('cold parklands', _draw_cold_parklands, 0, 0, 0) 
-        _draw_biome('steppe', _draw_steppe, 0, 0, 0) 
-        _draw_biome('chaparral', _draw_chaparral, 0, 0, 0) 
-        _draw_biome('savanna', _draw_savanna, 0, 0, 0)  
-        _draw_biome('cool desert', _draw_cool_desert, 8, 2, 9)
-        _draw_biome('hot desert', _draw_hot_desert, 8, 2, 9)
-        _draw_biome('boreal forest', _draw_boreal_forest, 4, 5, 6)
-        _draw_biome('cool temperate forest', _draw_temperate_forest1, 4, 5, 6,
-                    _draw_temperate_forest2)            
-        _draw_biome('warm temperate forest', _draw_warm_temperate_forest, 4, 5, 6)  
-        _draw_biome('tropical dry forest group', _draw_tropical_dry_forest, 4, 5, 6)
-        _draw_biome('jungle', _draw_jungle, 4, 5, 6)
-
-        # TODO: there was a stub for a rock desert biome group
-        # it should be super easy to introduce that group with the new
-        # biome group concept but since it did nothing I removed the stub
-
-    if draw_rivers:
-        draw_rivers_on_image(world, target, resize_factor)
-
-    # Draw mountains
-    if draw_mountains:
-        if verbose:
-            start_time = time.time()
-        for y in range(resize_factor * world.height):
-            for x in range(resize_factor * world.width):
-                if mountains_mask[y, x] > 0:
-                    w = mountains_mask[y, x]
-                    h = 3 + int(world.level_of_mountain(
-                        (int(x / resize_factor), int(y / resize_factor))))
-                    r = max(int(w / 3 * 2), h)
-
-                    if r not in border_neighbours:
-                        border_neighbours[r] = numpy.rint(count_neighbours(borders, r))
-
-                    if border_neighbours[r][y,x] <= 2:
-                        _draw_a_mountain(target, x, y, w=w, h=h)
-                        mountains_mask[y-r:y+r+1,x-r:x+r+1] = 0.0
-        if verbose:
-            elapsed_time = time.time() - start_time
-            print(
-                "...drawing_functions.draw_oldmap_on_pixel: draw mountains " +
-                "Elapsed time " + str(elapsed_time) + " seconds.")
+        pixels[y + mody, x + modx] = mcr

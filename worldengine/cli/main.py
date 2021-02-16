@@ -1,12 +1,13 @@
 import sys
+import os
+
 from argparse import ArgumentParser
 
 import numpy
-import os
 
 import worldengine.generation as geo
 from worldengine.common import set_verbose, print_verbose, get_verbose
-from worldengine.draw import draw_ancientmap_on_file, draw_biome_on_file, draw_ocean_on_file, \
+from worldengine.draw import draw_biome_on_file, draw_ocean_on_file, \
     draw_precipitation_on_file, draw_grayscale_heightmap_on_file, draw_simple_elevation_on_file, \
     draw_temperature_levels_on_file, draw_riversmap_on_file, draw_scatter_plot_on_file, \
     draw_satellite_on_file, draw_icecaps_on_file
@@ -25,7 +26,7 @@ except:
 
 VERSION = __version__
 
-OPERATIONS = 'world|plates|ancient_map|info|export'
+OPERATIONS = 'world|plates|info|export'
 SEA_COLORS = 'blue|brown'
 STEPS = 'plates|precipitations|full'
 
@@ -141,15 +142,6 @@ def check_step(step_name):
         return Step.get_by_name("full")
     else:
         return step
-
-
-def operation_ancient_map(world, map_filename, resize_factor, sea_color,
-                          draw_biome, draw_rivers, draw_mountains,
-                          draw_outer_land_border):
-    draw_ancientmap_on_file(world, map_filename, resize_factor, sea_color,
-                            draw_biome, draw_rivers, draw_mountains,
-                            draw_outer_land_border, get_verbose())
-    print("+ ancient map generated in '%s'" % map_filename)
 
 
 def __get_last_byte__(filename):
@@ -334,42 +326,6 @@ def main():
     # exposing axial_tilt
     g_generate.add_argument('-ax', '--axial_tilt', dest='axial_tilt', choices=range(-90, 91),
                             metavar="[-90-90]", help='Axial tilt (-180-180) denoting the world obliquity. Default is 25.', default=25, type=int)
-
-    # -----------------------------------------------------
-    g_ancient_map = parser.add_argument_group(
-        "Ancient Map Options", "These options are only useful in " +
-                               "ancient_map mode")
-    g_ancient_map.add_argument('-w', '--worldfile', dest='world_file',
-                               help="FILE to be loaded", metavar="FILE")
-    g_ancient_map.add_argument('-g', '--generatedfile', dest='generated_file',
-                               help="name of the FILE", metavar="FILE")
-    g_ancient_map.add_argument(
-        '-f', '--resize-factor', dest='resize_factor', type=int,
-        help="resize factor (only integer values). " +
-             "Note this can only be used to increase " +
-             "the size of the map [default=%(default)s]",
-        metavar="N", default='1')
-    g_ancient_map.add_argument('--sea_color', dest='sea_color',
-                               help="string for color [" + SEA_COLORS + "]",
-                               metavar="S", default="brown")
-
-    g_ancient_map.add_argument('--not-draw-biome', dest='draw_biome',
-                               action="store_false",
-                               help="Not draw biome",
-                               default=True)
-    g_ancient_map.add_argument('--not-draw-mountains', dest='draw_mountains',
-                               action="store_false",
-                               help="Not draw mountains",
-                               default=True)
-    g_ancient_map.add_argument('--not-draw-rivers', dest='draw_rivers',
-                               action="store_false",
-                               help="Not draw rivers",
-                               default=True)
-    g_ancient_map.add_argument('--draw-outer-border', dest='draw_outer_border',
-                               action="store_true",
-                               help="Draw outer land border",
-                               default=False)
-    # TODO: allow for RGB specification as [r g b], ie [0.5 0.5 0.5] for gray
 
     # -----------------------------------------------------
     export_options = parser.add_argument_group(

@@ -1,7 +1,6 @@
 import numpy
 
-from worldengine.drawing_functions import draw_ancientmap, \
-    draw_rivers_on_image
+from worldengine.drawing_functions import draw_rivers_on_image
 from worldengine.image_io import PNGWriter
 
 # -------------
@@ -11,7 +10,7 @@ from worldengine.image_io import PNGWriter
 ### For draw_satellite ###
 NOISE_RANGE = 15 # a random value between -NOISE_RANGE and NOISE_RANGE will be added to the rgb of each pixel
 
-# These are arbitrarily-chosen elevation cutoffs for 4 different height levels. 
+# These are arbitrarily-chosen elevation cutoffs for 4 different height levels.
 # Some color modifiers will be applied at each level
 HIGH_MOUNTAIN_ELEV = 215
 MOUNTAIN_ELEV      = 175
@@ -25,7 +24,7 @@ MOUNTAIN_NOISE_MODIFIER =      (-4, -12, -4)
 HIGH_HILL_NOISE_MODIFIER =     (-3, -10, -3)
 HILL_NOISE_MODIFIER =          (-2, -6,  -2)
 
-# This is the base "mountain color". Elevations above this size will have their colors interpolated with this 
+# This is the base "mountain color". Elevations above this size will have their colors interpolated with this
 # color in order to give a more mountainous appearance
 MOUNTAIN_COLOR = (50, 57, 28)
 
@@ -90,7 +89,7 @@ _biome_colors = {
 }
 
 # These colors are used when drawing the satellite view map
-# The rgb values were hand-picked from an actual high-resolution 
+# The rgb values were hand-picked from an actual high-resolution
 # satellite map of earth. However, many values are either too similar
 # to each other or otherwise need to be updated. It is recommended that
 # further research go into these values, making sure that each rgb is
@@ -258,14 +257,14 @@ def get_normalized_elevation_array(world):
 
 def get_biome_color_based_on_elevation(world, elev, x, y, rng):
     ''' This is the "business logic" for determining the base biome color in satellite view.
-        This includes generating some "noise" at each spot in a pixel's rgb value, potentially 
-        modifying the noise based on elevation, and finally incorporating this with the base biome color. 
+        This includes generating some "noise" at each spot in a pixel's rgb value, potentially
+        modifying the noise based on elevation, and finally incorporating this with the base biome color.
 
         The basic rules regarding noise generation are:
         - Oceans have no noise added
         - land tiles start with noise somewhere inside (-NOISE_RANGE, NOISE_RANGE) for each rgb value
-        - land tiles with high elevations further modify the noise by set amounts (to drain some of the 
-          color and make the map look more like mountains) 
+        - land tiles with high elevations further modify the noise by set amounts (to drain some of the
+          color and make the map look more like mountains)
 
         The biome's base color may be interpolated with a predefined mountain brown color if the elevation is high enough.
 
@@ -287,25 +286,25 @@ def get_biome_color_based_on_elevation(world, elev, x, y, rng):
         noise = rng.randint(-NOISE_RANGE, NOISE_RANGE, size=3)  # draw three random numbers at once
 
         ####### Case 1 - elevation is very high ########
-        if elev > HIGH_MOUNTAIN_ELEV:     
+        if elev > HIGH_MOUNTAIN_ELEV:
             # Modify the noise to make the area slightly brighter to simulate snow-topped mountains.
             noise = add_colors(noise, HIGH_MOUNTAIN_NOISE_MODIFIER)
             # Average the biome's color with the MOUNTAIN_COLOR to tint the terrain
             biome_color = average_colors(biome_color, MOUNTAIN_COLOR)
 
         ####### Case 2 - elevation is high ########
-        elif elev > MOUNTAIN_ELEV:   
+        elif elev > MOUNTAIN_ELEV:
             # Modify the noise to make this tile slightly darker, especially draining the green
             noise = add_colors(noise, MOUNTAIN_NOISE_MODIFIER)
             # Average the biome's color with the MOUNTAIN_COLOR to tint the terrain
             biome_color = average_colors(biome_color, MOUNTAIN_COLOR)
 
         ####### Case 3 - elevation is somewhat high ########
-        elif elev > HIGH_HILL_ELEV:   
+        elif elev > HIGH_HILL_ELEV:
             noise = add_colors(noise, HIGH_HILL_NOISE_MODIFIER)
 
         ####### Case 4 - elevation is a little bit high ########
-        elif elev > HILL_ELEV:   
+        elif elev > HILL_ELEV:
             noise = add_colors(noise, HILL_NOISE_MODIFIER)
 
     # There is also a minor base modifier to the pixel's rgb value based on height
@@ -387,11 +386,11 @@ def draw_satellite(world, target):
         for x in range(world.width):
             # Get the normalized elevation at this pixel
             elev = elevation_mask[y, x]
-            
+
             # Get a rgb noise value, with some logic to modify it based on the elevation of the tile
             r, g, b = get_biome_color_based_on_elevation(world, elev, x, y, rng)
 
-            # Set pixel to this color. This initial color will be accessed and modified later when 
+            # Set pixel to this color. This initial color will be accessed and modified later when
             # the map is smoothed and shaded.
             target.set_pixel(x, y, (r, g, b, 255))
 
@@ -456,7 +455,7 @@ def draw_satellite(world, target):
         for x in range(SAT_SHADOW_SIZE-1, world.width-SAT_SHADOW_SIZE-1):
             if world.is_land((x, y)):
                 r, g, b, a = target[y, x]
-                
+
                 # Build up list of elevations in the previous n tiles, where n is the shadow size.
                 # This goes northwest to southeast
                 prev_elevs = [ world.layers['elevation'].data[y-n, x-n] for n in range(1, SAT_SHADOW_SIZE+1) ]
@@ -640,7 +639,7 @@ def draw_scatter_plot(world, size, target):
     max_temperature = temp.max()
     temperature_delta = max_temperature - min_temperature
     humidity_delta = max_humidity - min_humidity
-    
+
     #set all pixels white
     for y in range(0, size):
         for x in range(0, size):
@@ -664,12 +663,12 @@ def draw_scatter_plot(world, size, target):
             v_max = 0
         if v_max > (size - 1):
             v_max = size - 1
-            
+
         if h_max > 0 and h_min < size and v_max > 0:
             for y in range(int(h_min), int(h_max)):
                 for x in range(0, int(v_max)):
                     target.set_pixel(x, (size - 1) - y, (128, 128, 128, 255))
-                    
+
     #draw lines based on thresholds
     for t in range(0, 6):
         v = (size - 1) * ((world.layers['temperature'].thresholds[t][1] - min_temperature) / temperature_delta)
@@ -686,7 +685,7 @@ def draw_scatter_plot(world, size, target):
     #draw gamma curve
     curve_gamma = world.gamma_curve
     curve_bonus = world.curve_offset
-    
+
     for x in range(0, size):
         y = (size - 1) * ((numpy.power((float(x) / (size - 1)), curve_gamma) * (1 - curve_bonus)) + curve_bonus)
         target.set_pixel(x, (size - 1) - int(y), (255, 0, 0, 255))
@@ -699,7 +698,7 @@ def draw_scatter_plot(world, size, target):
                 t = world.temperature_at((x, y))
                 p = world.humidity_at((x, y))
 
-    #get red and blue values depending on temperature and humidity                
+    #get red and blue values depending on temperature and humidity
                 if world.is_temperature_polar((x, y)):
                     r = 0
                 elif world.is_temperature_alpine((x, y)):
@@ -734,9 +733,9 @@ def draw_scatter_plot(world, size, target):
     #calculate x and y position based on normalized temperature and humidity
                 nx = (size - 1) * ((t - min_temperature) / temperature_delta)
                 ny = (size - 1) * ((p - min_humidity) / humidity_delta)
-                    
+
                 target.set_pixel(int(nx), (size - 1) - int(ny), (r, 128, b, 255))
-    
+
 
 # -------------
 # Draw on files
@@ -794,17 +793,6 @@ def draw_temperature_levels_on_file(world, filename, black_and_white=False):
 def draw_biome_on_file(world, filename):
     img = PNGWriter.rgba_from_dimensions(world.width, world.height, filename)
     draw_biome(world, img)
-    img.complete()
-
-
-def draw_ancientmap_on_file(world, filename, resize_factor=1,
-                            sea_color=(212, 198, 169, 255),
-                            draw_biome=True, draw_rivers=True, draw_mountains=True, 
-                            draw_outer_land_border=False, verbose=False):
-    img = PNGWriter.rgba_from_dimensions(world.width * resize_factor, world.height * resize_factor, filename)
-    draw_ancientmap(world, img, resize_factor, sea_color,
-                    draw_biome, draw_rivers, draw_mountains, draw_outer_land_border, 
-                    verbose)
     img.complete()
 
 
