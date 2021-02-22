@@ -3,7 +3,6 @@
 import os
 import argparse
 
-OPERATIONS = 'world|plates|info|export'
 STEPS = 'plates|precipitations|full'
 
 class Parser():
@@ -50,9 +49,8 @@ class Parser():
     def __init__(self):
 
         self.parser = argparse.ArgumentParser(
-            usage="usage: %(prog)s [options] [" + OPERATIONS + "]")
+            usage="usage: %(prog)s [options]")
 
-        self.parser.add_argument('OPERATOR', nargs='?')
         self.parser.add_argument('FILE', nargs='?')
 
         # exposing output directory
@@ -168,23 +166,3 @@ class Parser():
                                      help = 'Axial tilt [-90.0, 90] denoting ' +
                                      'the world obliquity. Default is 25.0',
                                      default = 25.0, type = self.axial_tilt)
-
-        # -----------------------------------------------------
-        export_args = self.parser.add_argument_group(
-            "Export Options", "You can specify the formats you wish the generated output to be in. ")
-        export_args.add_argument("--export-format", dest="export_format", type=str,
-                                    help="Export to a specific format such as BMP or PNG. " +
-                                         "All possible formats: http://www.gdal.org/formats_list.html",
-                                    default="PNG", metavar="STR")
-        export_args.add_argument("--export-datatype", dest="export_datatype", type=str,
-                                    help="Type of stored data (e.g. uint16, int32, float32 and etc.)",
-                                    default="uint16", metavar="STR")
-        export_args.add_argument("--export-dimensions", dest="export_dimensions", type=int,
-                                    help="Export to desired dimensions. (e.g. 4096 4096)", default=None,
-                                    nargs=2)
-        export_args.add_argument("--export-normalize", dest="export_normalize", type=int,
-                                    help="Normalize the data set to between min and max. (e.g 0 255)",
-                                    nargs=2, default=None)
-        export_args.add_argument("--export-subset", dest="export_subset", type=int,
-                                    help="Normalize the data set to between min and max?",
-                                    nargs=4, default=None)
