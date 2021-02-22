@@ -216,13 +216,6 @@ def main():
     parser = Parser().parser
     args = parser.parse_args()
 
-    if os.path.exists(args.output_dir):
-        if not os.path.isdir(args.output_dir):
-            raise Exception("Output dir exists but it is not a dir")
-    else:
-        print('Directory does not exist, we are creating it')
-        os.makedirs(args.output_dir)
-
     operation = "world"
     if args.OPERATOR is None:
         pass

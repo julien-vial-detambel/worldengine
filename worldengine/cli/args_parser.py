@@ -1,13 +1,37 @@
 # -*- coding: UTF-8 -*-
 
-from argparse import ArgumentParser
+import os
+import argparse
 
 OPERATIONS = 'world|plates|info|export'
 STEPS = 'plates|precipitations|full'
 
-class Parser(ArgumentParser):
+# used for validation of directory given to parser
+def directory(path):
+    if not os.path.exists(path) or (os.path.exists(path)
+        and not os.path.isdir(path)):
+        raise argparse.ArgumentTypeError('Not a valid directory')
+    return path
+
+# used for validation of axial tilt
+def axial_tilt(ax):
+    ax = float(ax)
+    if ax < -90.0 or ax > 90.0:
+        raise argparse.ArgumentTypeError('Axial tilt should be in interval ' +
+                                         '[-90, 90]')
+    return ax
+
+# used for validation of plates number
+def plates_number(q):
+    q = int(q)
+    if q < 1 or q > 100:
+        raise argparse.ArgumentTypeError('Number of plates should be in ' +
+                                         'interval [0, 100]')
+    return q
+
+class Parser():
     def __init__(self):
-        self.parser = ArgumentParser(
+        self.parser = argparse.ArgumentParser(
             usage="usage: %(prog)s [options] [" + OPERATIONS + "]")
         self.parser.add_argument('OPERATOR', nargs='?')
         self.parser.add_argument('FILE', nargs='?')
@@ -15,7 +39,7 @@ class Parser(ArgumentParser):
         # exposing output directory
         self.parser.add_argument('-o', '--output-dir', dest = 'output_dir',
             help = 'Generate files in DIR [default = %(default)s]',
-            metavar = 'DIR', default = '.')
+            metavar = 'DIR', default = '.', type = directory)
 
         self.parser.add_argument(
             '-n', '--worldname', dest='world_name',
@@ -53,11 +77,10 @@ class Parser(ArgumentParser):
         # exposing the number of plates to generate
         self.parser.add_argument('-q', '--number-of-plates',
                                  dest = 'number_of_plates',
-                                 choices = range(1, 101),
                                  metavar = '[1-100]',
                                  help = 'Number of plates ' +
                                  '[default = %(default)s]',
-                                 default = '10', type = int)
+                                 default = '10', type = plates_number)
 
         self.parser.add_argument('-v', '--verbose', dest='verbose', action="store_true",
                             help="Enable verbose messages", default=False)
@@ -111,11 +134,10 @@ class Parser(ArgumentParser):
 
         # exposing axial_tilt
         generation_args.add_argument('-ax', '--axial_tilt', dest = 'axial_tilt',
-                                     choices = range(-90, 91),
                                      metavar = '[-90-90]',
-                                     help = 'Axial tilt (-180-180) denoting ' +
-                                     'the world obliquity. Default is 25.',
-                                     default = 25, type = int)
+                                     help = 'Axial tilt [-90.0, 90] denoting ' +
+                                     'the world obliquity. Default is 25.0',
+                                     default = 25.0, type = axial_tilt)
 
         # -----------------------------------------------------
         export_args = self.parser.add_argument_group(
