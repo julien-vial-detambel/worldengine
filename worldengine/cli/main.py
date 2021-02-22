@@ -23,13 +23,6 @@ import worldengine.logger as logger
 # importing custom argparser
 from args_parser import Parser
 
-try:
-    from worldengine.hdf5_serialization import save_world_to_hdf5
-
-    HDF5_AVAILABLE = True
-except:
-    HDF5_AVAILABLE = False
-
 VERSION = __version__
 
 OPERATIONS = 'world|plates|info|export'
@@ -37,7 +30,7 @@ STEPS = 'plates|precipitations|full'
 
 
 def generate_world(world_name, width, height, seed, num_plates, output_dir,
-                   step, ocean_level, temps, humids, axial_tilt, world_format='protobuf',
+                   step, ocean_level, temps, humids, axial_tilt,
                    gamma_curve=1.25, curve_offset=.2, fade_borders=True,
                    verbose=True, black_and_white=False):
     w = world_gen(world_name, width, height, axial_tilt, seed, temps, humids, num_plates, ocean_level,
@@ -50,13 +43,8 @@ def generate_world(world_name, width, height, seed, num_plates, output_dir,
 
     # Save data
     filename = "%s/%s.world" % (output_dir, world_name)
-    if world_format == 'protobuf':
-        with open(filename, "wb") as f:
-            f.write(w.protobuf_serialize())
-    elif world_format == 'hdf5':
-        save_world_to_hdf5(w, filename)
-    else:
-        print("Unknown format '%s', not saving " % world_format)
+    with open(filename, "wb") as f:
+        f.write(w.protobuf_serialize())
     print("* world data saved in '%s'" % filename)
     sys.stdout.flush()
 
@@ -239,9 +227,6 @@ def main():
     # the limit is hit when drawing ancient maps
     sys.setrecursionlimit(args.recursion_limit)
 
-    if args.hdf5 and not HDF5_AVAILABLE:
-        usage(error="HDF5 requires the presence of native libraries")
-
     operation = "world"
     if args.OPERATOR is None:
         pass
@@ -276,10 +261,6 @@ def main():
         world_name = "seed_%i" % seed
 
     step = check_step(args.step)
-
-    world_format = 'protobuf'
-    if args.hdf5:
-        world_format = 'hdf5'
 
     generation_operation = (operation == 'world') or (operation == 'plates')
 
@@ -332,7 +313,6 @@ def main():
         print(' width                : %i' % args.width)
         print(' height               : %i' % args.height)
         print(' number of plates     : %i' % args.number_of_plates)
-        print(' world format         : %s' % world_format)
         print(' black and white maps : %s' % args.black_and_white)
         print(' step                 : %s' % step.name)
         print(' greyscale heightmap  : %s' % args.grayscale_heightmap)
@@ -376,7 +356,7 @@ def main():
 
         world = generate_world(world_name, args.width, args.height,
                                seed, args.number_of_plates, args.output_dir,
-                               step, args.ocean_level, temps, humids, args.axial_tilt, world_format,
+                               step, args.ocean_level, temps, humids, args.axial_tilt,
                                gamma_curve=args.gv, curve_offset=args.go,
                                fade_borders=args.fade_borders,
                                verbose=args.verbose, black_and_white=args.black_and_white)

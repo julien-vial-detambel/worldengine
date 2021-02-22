@@ -24,21 +24,19 @@ class Parser(ArgumentParser):
                  "a name is not provided, then seed_N.world, " +
                  "where N=SEED",
             metavar="STR")
-        self.parser.add_argument('--hdf5', dest='hdf5',
-                            action="store_true",
-                            help="Save world file using HDF5 format. " +
-                                 "Default = store using protobuf format",
-                            default=False)
+
         self.parser.add_argument('-s', '--seed', dest='seed', type=int,
                             help="Use seed=N to initialize the pseudo-random " +
                                  "generation. If not provided, one will be " +
                                  "selected for you.",
                             metavar="N")
+
         self.parser.add_argument('-t', '--step', dest='step',
                             help="Use step=[" + STEPS + "] to specify how far " +
                                  "to proceed in the world generation process. " +
                                  "[default='%(default)s']",
                             metavar="STR", default="full")
+
         # TODO --step appears to be duplicate of OPERATIONS. Especially if
         # ancient_map is added to --step
         self.parser.add_argument('-x', '--width', dest='width', type=int,
