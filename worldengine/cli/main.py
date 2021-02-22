@@ -1,7 +1,8 @@
+# -*- coding: UTF-8 -*-
+
 import sys
 import os
 
-from argparse import ArgumentParser
 
 import numpy
 
@@ -17,6 +18,11 @@ from worldengine.plates import world_gen, generate_plates_simulation
 from worldengine.step import Step
 from worldengine.version import __version__
 
+# import global logger
+import worldengine.logger as logger
+# importing custom argparser
+from args_parser import Parser
+
 try:
     from worldengine.hdf5_serialization import save_world_to_hdf5
 
@@ -27,7 +33,6 @@ except:
 VERSION = __version__
 
 OPERATIONS = 'world|plates|info|export'
-SEA_COLORS = 'blue|brown'
 STEPS = 'plates|precipitations|full'
 
 
@@ -58,51 +63,42 @@ def generate_world(world_name, width, height, seed, num_plates, output_dir,
     # Generate images
     filename = '%s/%s_ocean.png' % (output_dir, world_name)
     draw_ocean_on_file(w.layers['ocean'].data, filename)
-    print("* ocean image generated in '%s'" % filename)
 
     if step.include_precipitations:
         filename = '%s/%s_precipitation.png' % (output_dir, world_name)
         draw_precipitation_on_file(w, filename, black_and_white)
-        print("* precipitation image generated in '%s'" % filename)
+
         filename = '%s/%s_temperature.png' % (output_dir, world_name)
         draw_temperature_levels_on_file(w, filename, black_and_white)
-        print("* temperature image generated in '%s'" % filename)
 
     if step.include_biome:
         filename = '%s/%s_biome.png' % (output_dir, world_name)
         draw_biome_on_file(w, filename)
-        print("* biome image generated in '%s'" % filename)
 
     filename = '%s/%s_elevation.png' % (output_dir, world_name)
     sea_level = w.sea_level()
     draw_simple_elevation_on_file(w, filename, sea_level=sea_level)
-    print("* elevation image generated in '%s'" % filename)
     return w
 
 
 def generate_grayscale_heightmap(world, filename):
     draw_grayscale_heightmap_on_file(world, filename)
-    print("+ grayscale heightmap generated in '%s'" % filename)
 
 
 def generate_rivers_map(world, filename):
     draw_riversmap_on_file(world, filename)
-    print("+ rivers map generated in '%s'" % filename)
 
 
 def draw_scatter_plot(world, filename):
     draw_scatter_plot_on_file(world, filename)
-    print("+ scatter plot generated in '%s'" % filename)
 
 
 def draw_satellite_map(world, filename):
     draw_satellite_on_file(world, filename)
-    print("+ satellite map generated in '%s'" % filename)
 
 
 def draw_icecaps_map(world, filename):
     draw_icecaps_on_file(world, filename)
-    print("+ icecap map generated in '%s'" % filename)
 
 
 def generate_plates(seed, world_name, output_dir, width, height, axial_tilt, num_plates=10):
@@ -150,7 +146,7 @@ def __get_last_byte__(filename):
         while tmp_data:
             tmp_data = input_file.read(1024 * 1024)
             if tmp_data:
-                data = tmp_data
+                data = tmp_datar
     return data[len(data) - 1]
 
 
@@ -225,132 +221,12 @@ def print_world_info(world):
 
 
 def main():
-    parser = ArgumentParser(
-        usage="usage: %(prog)s [options] [" + OPERATIONS + "]")
-    parser.add_argument('OPERATOR', nargs='?')
-    parser.add_argument('FILE', nargs='?')
-    parser.add_argument(
-        '-o', '--output-dir', dest='output_dir',
-        help="generate files in DIR [default = '%(default)s']",
-        metavar="DIR", default='.')
-    parser.add_argument(
-        '-n', '--worldname', dest='world_name',
-        help="set world name to STR. output is stored in a " +
-             "world file with the name format 'STR.world'. If " +
-             "a name is not provided, then seed_N.world, " +
-             "where N=SEED",
-        metavar="STR")
-    parser.add_argument('--hdf5', dest='hdf5',
-                        action="store_true",
-                        help="Save world file using HDF5 format. " +
-                             "Default = store using protobuf format",
-                        default=False)
-    parser.add_argument('-s', '--seed', dest='seed', type=int,
-                        help="Use seed=N to initialize the pseudo-random " +
-                             "generation. If not provided, one will be " +
-                             "selected for you.",
-                        metavar="N")
-    parser.add_argument('-t', '--step', dest='step',
-                        help="Use step=[" + STEPS + "] to specify how far " +
-                             "to proceed in the world generation process. " +
-                             "[default='%(default)s']",
-                        metavar="STR", default="full")
-    # TODO --step appears to be duplicate of OPERATIONS. Especially if
-    # ancient_map is added to --step
-    parser.add_argument('-x', '--width', dest='width', type=int,
-                        help="N = width of the world to be generated " +
-                             "[default=%(default)s]",
-                        metavar="N",
-                        default='512')
-    parser.add_argument('-y', '--height', dest='height', type=int,
-                        help="N = height of the world to be generated " +
-                             "[default=%(default)s]",
-                        metavar="N",
-                        default='512')
-    parser.add_argument('-q', '--number-of-plates', dest='number_of_plates',
-                        type=int,
-                        help="N = number of plates [default = %(default)s]",
-                        metavar="N", default='10')
-    parser.add_argument('--recursion_limit', dest='recursion_limit', type=int,
-                        help="Set the recursion limit [default = %(default)s]",
-                        metavar="N", default='2000')
-    parser.add_argument('-v', '--verbose', dest='verbose', action="store_true",
-                        help="Enable verbose messages", default=False)
-    parser.add_argument('--version', dest='version', action="store_true",
-                        help="Display version information", default=False)
-    parser.add_argument('--bw', '--black-and-white', dest='black_and_white',
-                        action="store_true",
-                        help="generate maps in black and white",
-                        default=False)
+    # initializing logger
+    logger.init()
 
-    # -----------------------------------------------------
-    g_generate = parser.add_argument_group(
-        "Generate Options", "These options are only useful in plate and " +
-                            "world modes")
-    g_generate.add_argument('-r', '--rivers', dest='rivers_map',
-                            action="store_true", help="generate rivers map")
-    g_generate.add_argument('-gs', '--grayscale-heightmap',
-                            dest='grayscale_heightmap', action="store_true",
-                            help='produce a grayscale heightmap')
-    g_generate.add_argument('--ocean_level', dest='ocean_level', type=float,
-                            help='elevation cut off for sea level " +'
-                                 '[default = %(default)s]',
-                            metavar="N", default=1.0)
-    g_generate.add_argument('--temps', dest='temps',
-                            help="Provide alternate ranges for temperatures. " +
-                                 "If not provided, the default values will be used. \n" +
-                                 "[default = .126/.235/.406/.561/.634/.876]",
-                            metavar="#/#/#/#/#/#")
-    g_generate.add_argument('--humidity', dest='humids',
-                            help="Provide alternate ranges for humidities. " +
-                                 "If not provided, the default values will be used. \n" +
-                                 "[default = .059/.222/.493/.764/.927/.986/.998]",
-                            metavar="#/#/#/#/#/#/#")
-    g_generate.add_argument('-gv', '--gamma-value', dest='gv', type=float,
-                            help="N = Gamma value for temperature/precipitation " +
-                                 "gamma correction curve. [default = %(default)s]",
-                            metavar="N", default='1.25')
-    g_generate.add_argument('-go', '--gamma-offset', dest='go', type=float,
-                            help="N = Adjustment value for temperature/precipitation " +
-                                 "gamma correction curve. [default = %(default)s]",
-                            metavar="N", default='.2')
-    g_generate.add_argument('--not-fade-borders', dest='fade_borders', action="store_false",
-                            help="Not fade borders",
-                            default=True)
-    g_generate.add_argument('--scatter', dest='scatter_plot',
-                            action="store_true", help="generate scatter plot")
-    g_generate.add_argument('--sat', dest='satelite_map',
-                            action="store_true", help="generate satellite map")
-    g_generate.add_argument('--ice', dest='icecaps_map',
-                            action="store_true", help="generate ice caps map")
-    # exposing axial_tilt
-    g_generate.add_argument('-ax', '--axial_tilt', dest='axial_tilt', choices=range(-90, 91),
-                            metavar="[-90-90]", help='Axial tilt (-180-180) denoting the world obliquity. Default is 25.', default=25, type=int)
-
-    # -----------------------------------------------------
-    export_options = parser.add_argument_group(
-        "Export Options", "You can specify the formats you wish the generated output to be in. ")
-    export_options.add_argument("--export-format", dest="export_format", type=str,
-                                help="Export to a specific format such as BMP or PNG. " +
-                                     "All possible formats: http://www.gdal.org/formats_list.html",
-                                default="PNG", metavar="STR")
-    export_options.add_argument("--export-datatype", dest="export_datatype", type=str,
-                                help="Type of stored data (e.g. uint16, int32, float32 and etc.)",
-                                default="uint16", metavar="STR")
-    export_options.add_argument("--export-dimensions", dest="export_dimensions", type=int,
-                                help="Export to desired dimensions. (e.g. 4096 4096)", default=None,
-                                nargs=2)
-    export_options.add_argument("--export-normalize", dest="export_normalize", type=int,
-                                help="Normalize the data set to between min and max. (e.g 0 255)",
-                                nargs=2, default=None)
-    export_options.add_argument("--export-subset", dest="export_subset", type=int,
-                                help="Normalize the data set to between min and max?",
-                                nargs=4, default=None)
-
+    # parse arguments
+    parser = Parser().parser
     args = parser.parse_args()
-
-    if args.version:
-        usage()
 
     if os.path.exists(args.output_dir):
         if not os.path.isdir(args.output_dir):
@@ -362,9 +238,6 @@ def main():
     # it needs to be increased to be able to generate very large maps
     # the limit is hit when drawing ancient maps
     sys.setrecursionlimit(args.recursion_limit)
-
-    if args.number_of_plates < 1 or args.number_of_plates > 100:
-        usage(error="Number of plates should be in [1, 100]")
 
     if args.hdf5 and not HDF5_AVAILABLE:
         usage(error="HDF5 requires the presence of native libraries")
@@ -475,16 +348,6 @@ def main():
         print(' gamma value          : %s' % args.gv)
         print(' gamma offset         : %s' % args.go)
         print(' axial tile           : %s' % args.axial_tilt)
-    if operation == 'ancient_map':
-        print(' operation              : %s generation' % operation)
-        print(' resize factor          : %i' % args.resize_factor)
-        print(' world file             : %s' % args.world_file)
-        print(' sea color              : %s' % args.sea_color)
-        print(' draw biome             : %s' % args.draw_biome)
-        print(' draw rivers            : %s' % args.draw_rivers)
-        print(' draw mountains         : %s' % args.draw_mountains)
-        print(' draw land outer border : %s' % args.draw_outer_border)
-
     # Warning messages
     warnings = []
     if temps != sorted(temps, reverse=True):
@@ -540,31 +403,6 @@ def main():
         generate_plates(seed, world_name, args.output_dir, args.width,
                         args.height, args.axial_tilt, num_plates=args.number_of_plates)
 
-    elif operation == 'ancient_map':
-        print('')  # empty line
-        print('starting (it could take a few minutes) ...')
-        # First, some error checking
-        if args.sea_color == "blue":
-            sea_color = (142, 162, 179, 255)
-        elif args.sea_color == "brown":
-            sea_color = (212, 198, 169, 255)
-        else:
-            usage("Unknown sea color: " + args.sea_color +
-                  " Select from [" + SEA_COLORS + "]")
-        if not args.world_file:
-            usage(
-                "For generating an ancient map is necessary to specify the " +
-                "world to be used (-w option)")
-        world = load_world(args.world_file)
-
-        print_verbose(" * world loaded")
-
-        if not args.generated_file:
-            args.generated_file = "ancient_map_%s.png" % world.name
-        operation_ancient_map(world, args.generated_file,
-                              args.resize_factor, sea_color,
-                              args.draw_biome, args.draw_rivers,
-                              args.draw_mountains, args.draw_outer_border)
     elif operation == 'info':
         world = load_world(args.FILE)
         print_world_info(world)

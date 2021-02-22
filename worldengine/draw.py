@@ -3,6 +3,8 @@ import numpy
 from worldengine.drawing_functions import draw_rivers_on_image
 from worldengine.image_io import PNGWriter
 
+import worldengine.logger as logger
+
 # -------------
 # Helper values
 # -------------
@@ -746,23 +748,27 @@ def draw_simple_elevation_on_file(world, filename, sea_level):
     img = PNGWriter.rgba_from_dimensions(world.width, world.height, filename)
     draw_simple_elevation(world, sea_level, img)
     img.complete()
+    logger.logger.info('Elevation image generated in %s' % filename)
 
 
 def draw_riversmap_on_file(world, filename):
     img = PNGWriter.rgba_from_dimensions(world.width, world.height, filename)
     draw_riversmap(world, img)
     img.complete()
+    logger.logger.info('Rivers map generated in %s' % filename)
 
 
 def draw_grayscale_heightmap_on_file(world, filename):
     img = PNGWriter.grayscale_from_array(world.layers['elevation'].data, filename, scale_to_range=True)
     img.complete()
+    logger.logger.info('Grayscale heightmap generated in %s' % filename)
 
 
 def draw_elevation_on_file(world, filename, shadow=True):
     img = PNGWriter.rgba_from_dimensions(world.width, world.height, filename)
     draw_elevation(world, shadow, img)
     img.complete()
+    logger.logger.info('Elevation image generated in %s' % filename)
 
 
 def draw_ocean_on_file(ocean, filename):
@@ -770,12 +776,14 @@ def draw_ocean_on_file(ocean, filename):
     img = PNGWriter.rgba_from_dimensions(width, height, filename)
     draw_ocean(ocean, img)
     img.complete()
+    logger.logger.info('Ocean image generated in %s' % filename)
 
 
 def draw_precipitation_on_file(world, filename, black_and_white=False):
     img = PNGWriter.rgba_from_dimensions(world.width, world.height, filename)
     draw_precipitation(world, img, black_and_white)
     img.complete()
+    logger.logger.info('Precipitation image generated in %s' % filename)
 
 
 def draw_world_on_file(world, filename):
@@ -788,26 +796,29 @@ def draw_temperature_levels_on_file(world, filename, black_and_white=False):
     img = PNGWriter.rgba_from_dimensions(world.width, world.height, filename)
     draw_temperature_levels(world, img, black_and_white)
     img.complete()
+    logger.logger.info('Temperature image generated in %s' % filename)
 
 
 def draw_biome_on_file(world, filename):
     img = PNGWriter.rgba_from_dimensions(world.width, world.height, filename)
     draw_biome(world, img)
     img.complete()
-
+    logger.logger.info('Biome image generated in %s' % filename)
 
 def draw_scatter_plot_on_file(world, filename):
     img = PNGWriter.rgba_from_dimensions(512, 512, filename)
     draw_scatter_plot(world, 512, img)
     img.complete()
-
+    logger.logger.info('Scatter plot generated in %s' % filename)
 
 def draw_satellite_on_file(world, filename):
     img = PNGWriter.rgba_from_dimensions(world.width, world.height, filename)
     draw_satellite(world, img)
     img.complete()
+    logger.logger.info('Satellite map generated in %s' % filename)
 
 
 def draw_icecaps_on_file(world, filename):
     img = PNGWriter.grayscale_from_array(world.layers['icecap'].data, filename, scale_to_range=True)
     img.complete()
+    logger.logger.info('+ icecap map generated in %s' % filename)
