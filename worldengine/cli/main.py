@@ -223,10 +223,6 @@ def main():
         print('Directory does not exist, we are creating it')
         os.makedirs(args.output_dir)
 
-    # it needs to be increased to be able to generate very large maps
-    # the limit is hit when drawing ancient maps
-    sys.setrecursionlimit(args.recursion_limit)
-
     operation = "world"
     if args.OPERATOR is None:
         pass

@@ -59,9 +59,6 @@ class Parser(ArgumentParser):
                                  '[default = %(default)s]',
                                  default = '10', type = int)
 
-        self.parser.add_argument('--recursion_limit', dest='recursion_limit', type=int,
-                            help="Set the recursion limit [default = %(default)s]",
-                            metavar="N", default='2000')
         self.parser.add_argument('-v', '--verbose', dest='verbose', action="store_true",
                             help="Enable verbose messages", default=False)
         self.parser.add_argument('--version', dest='version', action="store_true",
