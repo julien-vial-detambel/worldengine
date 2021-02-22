@@ -6,40 +6,61 @@ import argparse
 OPERATIONS = 'world|plates|info|export'
 STEPS = 'plates|precipitations|full'
 
-# used for validation of directory given to parser
-def directory(path):
-    if not os.path.exists(path) or (os.path.exists(path)
-        and not os.path.isdir(path)):
-        raise argparse.ArgumentTypeError('Not a valid directory')
-    return path
-
-# used for validation of axial tilt
-def axial_tilt(ax):
-    ax = float(ax)
-    if ax < -90.0 or ax > 90.0:
-        raise argparse.ArgumentTypeError('Axial tilt should be in interval ' +
-                                         '[-90, 90]')
-    return ax
-
-# used for validation of plates number
-def plates_number(q):
-    q = int(q)
-    if q < 1 or q > 100:
-        raise argparse.ArgumentTypeError('Number of plates should be in ' +
-                                         'interval [0, 100]')
-    return q
-
 class Parser():
+
+    # used for validation of directory given to parser
+    def directory(self, path):
+        if not os.path.exists(path) or (os.path.exists(path)
+            and not os.path.isdir(path)):
+            raise argparse.ArgumentTypeError('Not a valid directory')
+        return path
+
+    # used for validation of axial tilt
+    def axial_tilt(self, ax):
+        ax = float(ax)
+        if ax < -90.0 or ax > 90.0:
+            raise argparse.ArgumentTypeError('Axial tilt should be a float in ' +
+                                             'interval [-90, 90]')
+        return ax
+
+    # used for validation of plates number
+    def plates_number(self, q):
+        q = int(q)
+        if q < 1 or q > 100:
+            raise argparse.ArgumentTypeError('Number of plates should be an int ' +
+                                             'interval [0, 100]')
+        return q
+
+    # used for validation of gamma offset
+    def gamma_offset(self, go):
+        go = float(go)
+        if go >= 1 or go < 0:
+            raise argparse.ArgumentTypeError('Gamma offset should be a float in ' +
+                                             'interval [0, 1]')
+        return go
+
+    # used for validation of gamma value
+    def gamma_value(self, gv):
+        gv = float(gv)
+        if gv <= 0:
+            raise argparse.ArgumentTypeError('Gamma value should be a positive ' +
+                                             'float')
+        return gv
+
     def __init__(self):
+
         self.parser = argparse.ArgumentParser(
             usage="usage: %(prog)s [options] [" + OPERATIONS + "]")
+
         self.parser.add_argument('OPERATOR', nargs='?')
         self.parser.add_argument('FILE', nargs='?')
 
         # exposing output directory
         self.parser.add_argument('-o', '--output-dir', dest = 'output_dir',
-            help = 'Generate files in DIR [default = %(default)s]',
-            metavar = 'DIR', default = '.', type = directory)
+                                 metavar = 'DIR',
+                                 help = 'Generate files in DIR ' +
+                                 '[default = %(default)s]',
+                                 default = '.', type = self.directory)
 
         self.parser.add_argument(
             '-n', '--worldname', dest='world_name',
@@ -80,7 +101,7 @@ class Parser():
                                  metavar = '[1-100]',
                                  help = 'Number of plates ' +
                                  '[default = %(default)s]',
-                                 default = '10', type = plates_number)
+                                 default = '10', type = self.plates_number)
 
         self.parser.add_argument('-v', '--verbose', dest='verbose', action="store_true",
                             help="Enable verbose messages", default=False)
@@ -114,14 +135,23 @@ class Parser():
                                      "If not provided, the default values will be used. \n" +
                                      "[default = .059/.222/.493/.764/.927/.986/.998]",
                                 metavar="#/#/#/#/#/#/#")
-        generation_args.add_argument('-gv', '--gamma-value', dest='gv', type=float,
-                                help="N = Gamma value for temperature/precipitation " +
-                                     "gamma correction curve. [default = %(default)s]",
-                                metavar="N", default='1.25')
-        generation_args.add_argument('-go', '--gamma-offset', dest='go', type=float,
-                                help="N = Adjustment value for temperature/precipitation " +
-                                     "gamma correction curve. [default = %(default)s]",
-                                metavar="N", default='.2')
+
+        # exposing gamma value
+        generation_args.add_argument('-gv', '--gamma-value', dest='gv',
+                                     metavar = '>0',
+                                     help = 'Gamma value for ' +
+                                     'temperature/precipitation gamma ' +
+                                     'correction curve. [default = %(default)s]',
+                                     default = '1.25',  type = self.gamma_value)
+
+        # exposing gamma offset
+        generation_args.add_argument('-go', '--gamma-offset', dest = 'go',
+                                     metavar = '[0, 1]',
+                                     help = 'Adjustment value [0, 1] for ' +
+                                    'temperature/precipitation gamma ' +
+                                    'correction curve. [default = %(default)s]',
+                                    default = '.2', type = self.gamma_offset)
+
         generation_args.add_argument('--not-fade-borders', dest='fade_borders', action="store_false",
                                 help="Not fade borders",
                                 default=True)
@@ -132,12 +162,12 @@ class Parser():
         generation_args.add_argument('--ice', dest='icecaps_map',
                                 action="store_true", help="generate ice caps map")
 
-        # exposing axial_tilt
+        # exposing axial tilt
         generation_args.add_argument('-ax', '--axial_tilt', dest = 'axial_tilt',
                                      metavar = '[-90-90]',
                                      help = 'Axial tilt [-90.0, 90] denoting ' +
                                      'the world obliquity. Default is 25.0',
-                                     default = 25.0, type = axial_tilt)
+                                     default = 25.0, type = self.axial_tilt)
 
         # -----------------------------------------------------
         export_args = self.parser.add_argument_group(

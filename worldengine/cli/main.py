@@ -267,12 +267,6 @@ def main():
     if args.temps and len(args.temps.split('/')) is not 6:
         usage(error="temps must have exactly 6 values")
 
-    if args.go >= 1 or args.go < 0:
-        usage(error="Gamma offset must be greater than or equal to 0 and less than 1")
-
-    if args.gv <= 0:
-        usage(error="Gamma value must be greater than 0")
-
     temps = [.874, .765, .594, .439, .366, .124]
     if args.temps:
         temps = args.temps.split('/')
