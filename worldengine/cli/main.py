@@ -28,10 +28,10 @@ STEPS = 'plates|precipitations|full'
 
 
 def generate_world(world_name, width, height, seed, num_plates, output_dir,
-                   step, ocean_level, temps, humids, axial_tilt,
+                   step, ocean_level, temp_ranges, moist_ranges, axial_tilt,
                    gamma_curve=1.25, curve_offset=.2, fade_borders=True,
                    verbose=True, black_and_white=False):
-    w = world_gen(world_name, width, height, axial_tilt, seed, temps, humids, num_plates, ocean_level,
+    w = world_gen(world_name, width, height, axial_tilt, seed, temp_ranges, moist_ranges, num_plates, ocean_level,
                   step, gamma_curve=gamma_curve, curve_offset=curve_offset,
                   fade_borders=fade_borders, verbose=verbose)
 
@@ -125,24 +125,6 @@ def main():
 
     step = check_step(args.step)
 
-    if args.temps and len(args.temps.split('/')) is not 6:
-        usage(error="temps must have exactly 6 values")
-
-    temps = [.874, .765, .594, .439, .366, .124]
-    if args.temps:
-        temps = args.temps.split('/')
-        for x in range(0, len(temps)):
-            temps[x] = 1 - float(temps[x])
-
-    if args.humids and len(args.humids.split('/')) is not 7:
-        usage(error="humidity must have exactly 7 values")
-
-    humids = [.941, .778, .507, .236, 0.073, .014, .002]
-    if args.humids:
-        humids = args.humids.split('/')
-        for x in range(0, len(humids)):
-            humids[x] = 1 - float(humids[x])
-
     print('Worldengine - a world generator (v. %s)' % VERSION)
     print('-----------------------')
     print(' seed                 : %i' % seed)
@@ -158,26 +140,26 @@ def main():
     print(' scatter plot         : %s' % args.scatter_plot)
     print(' satellite map        : %s' % args.satelite_map)
     print(' fade borders         : %s' % args.fade_borders)
-    if args.temps:
-        print(' temperature ranges   : %s' % args.temps)
-    if args.humids:
-        print(' humidity ranges      : %s' % args.humids)
+    if args.temp_ranges:
+        print(' temperature ranges   : %s' % args.temp_ranges)
+    if args.moist_ranges:
+        print(' humidity ranges      : %s' % args.moist_ranges)
     print(' gamma value          : %s' % args.gv)
     print(' gamma offset         : %s' % args.go)
     print(' axial tile           : %s' % args.axial_tilt)
     # Warning messages
     warnings = []
-    if temps != sorted(temps, reverse=True):
+    if args.temp_ranges != sorted(args.temp_ranges, reverse=True):
         warnings.append("WARNING: Temperature array not in ascending order")
-    if numpy.amin(temps) < 0:
+    if numpy.amin(args.temp_ranges) < 0:
         warnings.append("WARNING: Maximum value in temperature array greater than 1")
-    if numpy.amax(temps) > 1:
+    if numpy.amax(args.temp_ranges) > 1:
         warnings.append("WARNING: Minimum value in temperature array less than 0")
-    if humids != sorted(humids, reverse=True):
+    if args.moist_ranges != sorted(args.moist_ranges, reverse=True):
         warnings.append("WARNING: Humidity array not in ascending order")
-    if numpy.amin(humids) < 0:
+    if numpy.amin(args.moist_ranges) < 0:
         warnings.append("WARNING: Maximum value in humidity array greater than 1")
-    if numpy.amax(humids) > 1:
+    if numpy.amax(args.moist_ranges) > 1:
         warnings.append("WARNING: Minimum value in temperature array less than 0")
 
     if warnings:
@@ -191,7 +173,8 @@ def main():
 
     world = generate_world(world_name, args.width, args.height,
                            seed, args.number_of_plates, args.output_dir,
-                           step, args.ocean_level, temps, humids, args.axial_tilt,
+                           step, args.ocean_level, args.temp_ranges,
+                           args.moist_ranges, args.axial_tilt,
                            gamma_curve=args.gv, curve_offset=args.go,
                            fade_borders=args.fade_borders,
                            verbose=args.verbose, black_and_white=args.black_and_white)

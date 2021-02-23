@@ -46,6 +46,29 @@ class Parser():
                                              'float')
         return gv
 
+    # used for validation of temperature ranges
+    def temperature_ranges(self, temp_ranges):
+        temp_ranges = str(temp_ranges)
+        if len(temp_ranges.split('/')) is not 6:
+            raise argparse.ArgumentTypeError('Temperature ranges must have ' +
+                                             'exactly 6 floating point values')
+        temp_ranges = temp_ranges.split('/')
+        for x in range(0, len(temp_ranges)):
+            temp_ranges[x] = 1 - float(temp_ranges[x])
+        return temp_ranges
+
+    # used for validation of moisture ranges
+    def moisture_ranges(self, moist_ranges):
+        moist_ranges = str(moist_ranges)
+        if len(moist_ranges.split('/')) is not 7:
+            raise argparse.ArgumentTypeError('Moisture ranges must have ' +
+                                             'exactly 7 floating point values')
+        moist_ranges = moist_ranges.split('/')
+        for x in range(0, len(moist_ranges)):
+            moist_ranges[x] = 1 - float(moist_ranges[x])
+        return moist_ranges
+
+
     def __init__(self):
 
         self.parser = argparse.ArgumentParser(
@@ -123,16 +146,22 @@ class Parser():
                                 help='elevation cut off for sea level " +'
                                      '[default = %(default)s]',
                                 metavar="N", default=1.0)
-        generation_args.add_argument('--temps', dest='temps',
-                                help="Provide alternate ranges for temperatures. " +
-                                     "If not provided, the default values will be used. \n" +
-                                     "[default = .126/.235/.406/.561/.634/.876]",
-                                metavar="#/#/#/#/#/#")
-        generation_args.add_argument('--humidity', dest='humids',
-                                help="Provide alternate ranges for humidities. " +
-                                     "If not provided, the default values will be used. \n" +
-                                     "[default = .059/.222/.493/.764/.927/.986/.998]",
-                                metavar="#/#/#/#/#/#/#")
+
+        # exposing temperature ranges
+        generation_args.add_argument('--temp_ranges', dest = 'temp_ranges',
+                                     metavar = '%f/%f/%f/%f/%f/%f',
+                                     help = 'Provide alternate ranges for ' +
+                                     'temperatures. [default = %(default)s]',
+                                     default = '.126/.235/.406/.561/.634/.876',
+                                     type = self.temperature_ranges)
+
+        # exposing moisture ranges
+        generation_args.add_argument('--moist_ranges', dest = 'moist_ranges',
+                                     metavar = '%f/%f/%f/%f/%f/%f/%f',
+                                     help = 'Provide alternate ranges for ' +
+                                     'moisture. [default = %(default)s]',
+                                     default = '.059/.222/.493/.764/.927/.986/.998',
+                                     type = self.moisture_ranges)
 
         # exposing gamma value
         generation_args.add_argument('-gv', '--gamma-value', dest='gv',
