@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 
 import sys
-import os
+from argparse import ArgumentTypeError
 
 import numpy
 
@@ -104,75 +104,24 @@ def main():
     parser = Parser().parser
     args = parser.parse_args()
 
-    operation = "world"
+    # logging cli arguments on debug
+    logger.logger.debug('cli args: ' + str(vars(args)))
 
-    # there is a hard limit somewhere so seeds outside the uint16 range are considered unsafe
-    maxseed = numpy.iinfo(
-        numpy.uint16).max
-    if args.seed is not None:
-        seed = int(args.seed)
-        assert 0 <= seed <= maxseed, \
-            "Seed has to be in the range between 0 and %s, borders included." % maxseed
-    else:
-        seed = numpy.random.randint(0,
-                                    maxseed)  # first-time RNG initialization is done automatically
-    numpy.random.seed(seed)
+    # applying seed for numpy pseudo random seed
+    numpy.random.seed(args.seed)
 
-    if args.world_name:
-        world_name = args.world_name
-    else:
-        world_name = "seed_%i" % seed
+    # defining world name
+    if not args.world_name:
+        args.world_name = 'seed_%i' % args.seed
 
     step = check_step(args.step)
-
-    print('Worldengine - a world generator (v. %s)' % VERSION)
-    print('-----------------------')
-    print(' seed                 : %i' % seed)
-    print(' name                 : %s' % world_name)
-    print(' width                : %i' % args.width)
-    print(' height               : %i' % args.height)
-    print(' number of plates     : %i' % args.number_of_plates)
-    print(' black and white maps : %s' % args.black_and_white)
-    print(' step                 : %s' % step.name)
-    print(' greyscale heightmap  : %s' % args.grayscale_heightmap)
-    print(' icecaps heightmap    : %s' % args.icecaps_map)
-    print(' rivers map           : %s' % args.rivers_map)
-    print(' scatter plot         : %s' % args.scatter_plot)
-    print(' satellite map        : %s' % args.satelite_map)
-    print(' fade borders         : %s' % args.fade_borders)
-    if args.temp_ranges:
-        print(' temperature ranges   : %s' % args.temp_ranges)
-    if args.moist_ranges:
-        print(' humidity ranges      : %s' % args.moist_ranges)
-    print(' gamma value          : %s' % args.gv)
-    print(' gamma offset         : %s' % args.go)
-    print(' axial tile           : %s' % args.axial_tilt)
-    # Warning messages
-    warnings = []
-    if args.temp_ranges != sorted(args.temp_ranges, reverse=True):
-        warnings.append("WARNING: Temperature array not in ascending order")
-    if numpy.amin(args.temp_ranges) < 0:
-        warnings.append("WARNING: Maximum value in temperature array greater than 1")
-    if numpy.amax(args.temp_ranges) > 1:
-        warnings.append("WARNING: Minimum value in temperature array less than 0")
-    if args.moist_ranges != sorted(args.moist_ranges, reverse=True):
-        warnings.append("WARNING: Humidity array not in ascending order")
-    if numpy.amin(args.moist_ranges) < 0:
-        warnings.append("WARNING: Maximum value in humidity array greater than 1")
-    if numpy.amax(args.moist_ranges) > 1:
-        warnings.append("WARNING: Minimum value in temperature array less than 0")
-
-    if warnings:
-        print("\n")
-        for x in range(len(warnings)):
-            print(warnings[x])
 
     set_verbose(args.verbose)
 
     print('starting (it could take a few minutes) ...')
 
-    world = generate_world(world_name, args.width, args.height,
-                           seed, args.number_of_plates, args.output_dir,
+    world = generate_world(args.world_name, args.width, args.height,
+                           args.seed, args.number_of_plates, args.output_dir,
                            step, args.ocean_level, args.temp_ranges,
                            args.moist_ranges, args.axial_tilt,
                            gamma_curve=args.gv, curve_offset=args.go,

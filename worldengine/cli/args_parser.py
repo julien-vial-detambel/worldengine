@@ -3,6 +3,10 @@
 import os
 import argparse
 
+import numpy
+
+import worldengine.logger as logger
+
 STEPS = 'plates|precipitations|full'
 
 class Parser():
@@ -55,6 +59,14 @@ class Parser():
         temp_ranges = temp_ranges.split('/')
         for x in range(0, len(temp_ranges)):
             temp_ranges[x] = 1 - float(temp_ranges[x])
+
+        if temp_ranges != sorted(temp_ranges, reverse = True):
+            logger.logger.warning('Temperature array not in ascending order')
+        if numpy.amin(temp_ranges) < 0:
+            logger.logger.warning('Maximum value in temperature array greater than 1')
+        if numpy.amax(temp_ranges) > 1:
+            logger.logger.warning('Minimum value in temperature array less than 0')
+
         return temp_ranges
 
     # used for validation of moisture ranges
@@ -66,13 +78,28 @@ class Parser():
         moist_ranges = moist_ranges.split('/')
         for x in range(0, len(moist_ranges)):
             moist_ranges[x] = 1 - float(moist_ranges[x])
+
+        if moist_ranges != sorted(moist_ranges, reverse = True):
+            logger.logger.warning('Humidity array not in ascending order')
+        if numpy.amin(moist_ranges) < 0:
+            logger.logger.warning('Maximum value in humidity array greater than 1')
+        if numpy.amax(moist_ranges) > 1:
+            logger.logger.warning('Minimum value in temperature array less than 0')
+
         return moist_ranges
 
+    # used for seed validation
+    def seed(self, seed):
+        seed = int(seed)
+        if seed < 0 or seed > 65535:
+            raise argparse.ArgumentTypeError('Seed should be in interval ' +
+                                             '[0, 65535]')
+        return seed
 
     def __init__(self):
 
         self.parser = argparse.ArgumentParser(
-            usage="usage: %(prog)s [options]")
+            usage="%(prog)s [options]")
 
         self.parser.add_argument('FILE', nargs='?')
 
@@ -83,19 +110,20 @@ class Parser():
                                  '[default = %(default)s]',
                                  default = '.', type = self.directory)
 
-        self.parser.add_argument(
-            '-n', '--worldname', dest='world_name',
-            help="set world name to STR. output is stored in a " +
-                 "world file with the name format 'STR.world'. If " +
-                 "a name is not provided, then seed_N.world, " +
-                 "where N=SEED",
-            metavar="STR")
+        # exposing seed
+        self.parser.add_argument('-s', '--seed', dest = 'seed',
+                                 metavar = '[0, 65535]',
+                                 help = 'Specify seed for pseudo-random ' +
+                                 'generation.',
+                                 default = numpy.random.randint(0, 65535),
+                                 type = self.seed)
 
-        self.parser.add_argument('-s', '--seed', dest='seed', type=int,
-                            help="Use seed=N to initialize the pseudo-random " +
-                                 "generation. If not provided, one will be " +
-                                 "selected for you.",
-                            metavar="N")
+        # exposing worldname
+        # TODO: dangerous uses of seed defined above.
+        self.parser.add_argument('-n', '--worldname', dest = 'world_name',
+                                 metavar = 'STR',
+                                 help = 'Specify world name used for outputs')
+                                 #//default = 'seed_%i' % args.seed)
 
         self.parser.add_argument('-t', '--step', dest='step',
                             help="Use step=[" + STEPS + "] to specify how far " +
@@ -103,13 +131,12 @@ class Parser():
                                  "[default='%(default)s']",
                             metavar="STR", default="full")
 
-        # TODO --step appears to be duplicate of OPERATIONS. Especially if
-        # ancient_map is added to --step
         self.parser.add_argument('-x', '--width', dest='width', type=int,
                             help="N = width of the world to be generated " +
                                  "[default=%(default)s]",
                             metavar="N",
                             default='512')
+
         self.parser.add_argument('-y', '--height', dest='height', type=int,
                             help="N = height of the world to be generated " +
                                  "[default=%(default)s]",
@@ -126,8 +153,10 @@ class Parser():
 
         self.parser.add_argument('-v', '--verbose', dest='verbose', action="store_true",
                             help="Enable verbose messages", default=False)
+
         self.parser.add_argument('--version', dest='version', action="store_true",
                             help="Display version information", default=False)
+
         self.parser.add_argument('--bw', '--black-and-white', dest='black_and_white',
                             action="store_true",
                             help="generate maps in black and white",
@@ -137,11 +166,14 @@ class Parser():
         generation_args = self.parser.add_argument_group(
             "Generate Options", "These options are only useful in plate and " +
                                 "world modes")
+
         generation_args.add_argument('-r', '--rivers', dest='rivers_map',
                                 action="store_true", help="generate rivers map")
+
         generation_args.add_argument('-gs', '--grayscale-heightmap',
                                 dest='grayscale_heightmap', action="store_true",
                                 help='produce a grayscale heightmap')
+
         generation_args.add_argument('--ocean_level', dest='ocean_level', type=float,
                                 help='elevation cut off for sea level " +'
                                      '[default = %(default)s]',
@@ -165,7 +197,7 @@ class Parser():
 
         # exposing gamma value
         generation_args.add_argument('-gv', '--gamma-value', dest='gv',
-                                     metavar = '>0',
+                                     metavar = '> 0',
                                      help = 'Gamma value for ' +
                                      'temperature/precipitation gamma ' +
                                      'correction curve. [default = %(default)s]',
@@ -182,10 +214,13 @@ class Parser():
         generation_args.add_argument('--not-fade-borders', dest='fade_borders', action="store_false",
                                 help="Not fade borders",
                                 default=True)
+
         generation_args.add_argument('--scatter', dest='scatter_plot',
                                 action="store_true", help="generate scatter plot")
+
         generation_args.add_argument('--sat', dest='satelite_map',
                                 action="store_true", help="generate satellite map")
+
         generation_args.add_argument('--ice', dest='icecaps_map',
                                 action="store_true", help="generate ice caps map")
 
