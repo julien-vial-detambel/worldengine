@@ -7,10 +7,13 @@ Jython
 import numpy
 import sys
 import time
-from worldengine.common import get_verbose, count_neighbours
+
+from worldengine.common import count_neighbours
 from worldengine.common import anti_alias as anti_alias_channel
 from worldengine.biome import BiomeGroup, _un_camelize
 
+# import global logger
+import worldengine.logger as logger
 
 # -------------------
 # Reusable functions

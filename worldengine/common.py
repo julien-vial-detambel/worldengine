@@ -5,34 +5,9 @@ import numpy
 # Global variables
 # ----------------
 
-
-verbose = False
-
-
 # -------
 # Functions
 # -------
-
-
-def get_verbose():
-    global verbose
-    if 'verbose' not in globals():
-        return False
-    else:
-        return verbose
-
-
-def set_verbose(value):
-    """
-    Set the level of verbosity for all the operations executed in Worldengine
-    """
-    global verbose
-    verbose = value
-
-
-def print_verbose(msg):
-    if get_verbose():
-        print(msg)
 
 
 class Counter(object):
@@ -58,7 +33,7 @@ class Counter(object):
         sys.stdout.write(self.to_str)
 
 
-# For each step and each x, y the original implementation averaged 
+# For each step and each x, y the original implementation averaged
 # over the 9 values in the square from (x-1, y-1) to (x+1,y+1)
 # To that it added, with equal weight, twice the initial value.
 # That makes a total of 11 values.
@@ -67,7 +42,7 @@ class Counter(object):
 # current = map
 #
 # map_part = (2/11)*map
-    
+
 # linear_filter = [[1/11, 1/11, 1/11],
 #                  [1/11, 1/11, 1/11],
 #                  [1/11, 1/11, 1/11]]
@@ -105,7 +80,7 @@ def anti_alias(map_in, steps):
 
         # we need to handle boundary conditions by hand, unfortunately
         # there might be a better way but this works (circular boundary)
-        # notice how we'll need to add 2 to width and height later 
+        # notice how we'll need to add 2 to width and height later
         # because of this
         result = numpy.append(result, [result[0,:]], 0)
         result = numpy.append(result, numpy.transpose([result[:,0]]), 1)

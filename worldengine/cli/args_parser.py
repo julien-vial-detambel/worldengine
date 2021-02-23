@@ -151,9 +151,6 @@ class Parser():
                                  '[default = %(default)s]',
                                  default = '10', type = self.plates_number)
 
-        self.parser.add_argument('-v', '--verbose', dest='verbose', action="store_true",
-                            help="Enable verbose messages", default=False)
-
         self.parser.add_argument('--version', dest='version', action="store_true",
                             help="Display version information", default=False)
 

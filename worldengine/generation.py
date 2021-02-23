@@ -13,8 +13,10 @@ from worldengine.simulations.erosion import ErosionSimulation
 from worldengine.simulations.precipitation import PrecipitationSimulation
 from worldengine.simulations.biome import BiomeSimulation
 from worldengine.simulations.icecap import IcecapSimulation
-from worldengine.common import anti_alias, get_verbose
+from worldengine.common import anti_alias
 
+# import global logger
+import worldengine.logger as logger
 
 # ------------------
 # Initial generation
@@ -26,19 +28,19 @@ def center_land(world):
 
     y_sums = world.layers['elevation'].data.sum(1)  # 1 == sum along x-axis
     y_with_min_sum = y_sums.argmin()
-    if get_verbose():
-        print("geo.center_land: height complete")
+
+    logger.logger.info('geo.center_land: height complete')
 
     x_sums = world.layers['elevation'].data.sum(0)  # 0 == sum along y-axis
     x_with_min_sum = x_sums.argmin()
-    if get_verbose():
-        print("geo.center_land: width complete")
+
+    logger.logger.info('geo.center_land: width complete')
 
     latshift = 0
     world.layers['elevation'].data = numpy.roll(numpy.roll(world.layers['elevation'].data, -y_with_min_sum + latshift, axis=0), - x_with_min_sum, axis=1)
     world.layers['plates'].data = numpy.roll(numpy.roll(world.layers['plates'].data, -y_with_min_sum + latshift, axis=0), - x_with_min_sum, axis=1)
-    if get_verbose():
-        print("geo.center_land: width complete")
+
+    logger.logger.info('geo.center_land: width complete')
 
 
 def place_oceans_at_map_borders(world):
@@ -236,8 +238,8 @@ def generate_world(w, step):
     if not step.include_erosion:
         return w
     ErosionSimulation().execute(w, seed_dict['ErosionSimulation'])  # seed not currently used
-    if get_verbose():
-        print("...erosion calculated")
+
+    logger.logger.info('...erosion calculated')
 
     WatermapSimulation().execute(w, seed_dict['WatermapSimulation'])  # seed not currently used
 
@@ -250,21 +252,16 @@ def generate_world(w, step):
     cm, biome_cm = BiomeSimulation().execute(w, seed_dict['BiomeSimulation'])  # seed not currently used
     for cl in cm.keys():
         count = cm[cl]
-        if get_verbose():
-            print("%s = %i" % (str(cl), count))
+        logger.logger.info('.%s = %i' % (str(cl), count))
 
-    if get_verbose():
-        print('')  # empty line
-        print('Biome obtained (% of total surface):')
-
+    distrib_str = 'Biome obtained (% of total surface):'
     cl_sorted = sorted(biome_cm, key=biome_cm.get, reverse=True)
     for cl in cl_sorted:
         count = biome_cm[cl]
-        if get_verbose():
-            distrib = ' %30s = %.3f%%' % (str(cl), float(count) / sum(biome_cm.values()) * 100)
-            if cl != 'ocean':
-                distrib += ' (%.3f%% emerged surface)' % (float(count) / (sum(biome_cm.values()) - biome_cm['ocean']) * 100)
-            print(distrib)
+        distrib_str += '\n%s = %.3f%%' % (str(cl), float(count) / sum(biome_cm.values()) * 100)
+        if cl != 'ocean':
+            distrib_str += ' (%.3f%% emerged surface)' % (float(count) / (sum(biome_cm.values()) - biome_cm['ocean']) * 100)
+    logger.logger.info(distrib_str)
 
     IcecapSimulation().execute(w, seed_dict['IcecapSimulation'])  # makes use of temperature-map
 

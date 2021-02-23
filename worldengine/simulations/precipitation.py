@@ -3,8 +3,9 @@ import numpy
 from noise import snoise2
 
 from worldengine.simulations.basic import find_threshold_f
-from worldengine.common import get_verbose
 
+# import global logger
+import worldengine.logger as logger
 
 class PrecipitationSimulation(object):
 
@@ -13,8 +14,7 @@ class PrecipitationSimulation(object):
         return not world.has_precipitations()
 
     def execute(self, world, seed):
-        if get_verbose():
-            start_time = time.time()
+        start_time = time.time()
         pre_calculated = self._calculate(seed, world)
         ocean = world.layers['ocean'].data
         ths = [
@@ -23,11 +23,9 @@ class PrecipitationSimulation(object):
             ('hig', None)
         ]
         world.precipitation = (pre_calculated, ths)
-        if get_verbose():
-            elapsed_time = time.time() - start_time
-            print(
-                "...precipitations calculated. Elapsed time %f  seconds."
-                % elapsed_time)
+        elapsed_time = time.time() - start_time
+        logger.logger.info('...precipitations calculated. Elapsed time' +
+                           str(elapsed_time) + 'seconds.')
 
     @staticmethod
     def _calculate(seed, world):
@@ -69,17 +67,17 @@ class PrecipitationSimulation(object):
         max_temp = world.layers['temperature'].max()
         precip_delta = (max_precip - min_precip)
         temp_delta = (max_temp - min_temp)
-        
+
         #normalize temperature and precipitation arrays
         t = (world.layers['temperature'].data - min_temp) / temp_delta
         p = (precipitations - min_precip) / precip_delta
-        
+
         #modify precipitation based on temperature
 
         #--------------------------------------------------------------------------------
         #
         # Ok, some explanation here because why the formula is doing this may be a
-        # little confusing. We are going to generate a modified gamma curve based on 
+        # little confusing. We are going to generate a modified gamma curve based on
         # normalized temperature and multiply our precipitation amounts by it.
         #
         # numpy.power(t,curve_gamma) generates a standard gamma curve. However
@@ -97,15 +95,15 @@ class PrecipitationSimulation(object):
         # renormalizing.
         #
         #--------------------------------------------------------------------------------
-        
+
         curve = (numpy.power(t, curve_gamma) * (1-curve_bonus)) + curve_bonus
         precipitations = numpy.multiply(p, curve)
 
-        #Renormalize precipitation because the precipitation 
+        #Renormalize precipitation because the precipitation
         #changes will probably not fully extend from -1 to 1.
         min_precip = precipitations.min()
         max_precip = precipitations.max()
         precip_delta = (max_precip - min_precip)
         precipitations = (((precipitations - min_precip) / precip_delta) * 2) - 1
-        
+
         return precipitations

@@ -6,7 +6,6 @@ from argparse import ArgumentTypeError
 import numpy
 
 import worldengine.generation as geo
-from worldengine.common import set_verbose, print_verbose, get_verbose
 from worldengine.draw import draw_biome_on_file, draw_ocean_on_file, \
     draw_precipitation_on_file, draw_grayscale_heightmap_on_file, draw_simple_elevation_on_file, \
     draw_temperature_levels_on_file, draw_riversmap_on_file, draw_scatter_plot_on_file, \
@@ -29,11 +28,10 @@ STEPS = 'plates|precipitations|full'
 
 def generate_world(world_name, width, height, seed, num_plates, output_dir,
                    step, ocean_level, temp_ranges, moist_ranges, axial_tilt,
-                   gamma_curve=1.25, curve_offset=.2, fade_borders=True,
-                   verbose=True, black_and_white=False):
+                   gamma_curve=1.25, curve_offset=.2, fade_borders=True, black_and_white=False):
     w = world_gen(world_name, width, height, axial_tilt, seed, temp_ranges, moist_ranges, num_plates, ocean_level,
                   step, gamma_curve=gamma_curve, curve_offset=curve_offset,
-                  fade_borders=fade_borders, verbose=verbose)
+                  fade_borders=fade_borders)
 
     print('')  # empty line
     print('Producing ouput:')
@@ -116,8 +114,6 @@ def main():
 
     step = check_step(args.step)
 
-    set_verbose(args.verbose)
-
     print('starting (it could take a few minutes) ...')
 
     world = generate_world(args.world_name, args.width, args.height,
@@ -125,8 +121,7 @@ def main():
                            step, args.ocean_level, args.temp_ranges,
                            args.moist_ranges, args.axial_tilt,
                            gamma_curve=args.gv, curve_offset=args.go,
-                           fade_borders=args.fade_borders,
-                           verbose=args.verbose, black_and_white=args.black_and_white)
+                           fade_borders=args.fade_borders, black_and_white=args.black_and_white)
     if args.grayscale_heightmap:
         generate_grayscale_heightmap(world,
                                      '%s/%s_grayscale.png' % (args.output_dir, world_name))
