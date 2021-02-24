@@ -33,15 +33,11 @@ def generate_world(world_name, width, height, seed, num_plates, output_dir,
                   step, gamma_curve=gamma_curve, curve_offset=curve_offset,
                   fade_borders=fade_borders)
 
-    print('')  # empty line
-    print('Producing ouput:')
-    sys.stdout.flush()
-
     # Save data
     filename = "%s/%s.world" % (output_dir, world_name)
     with open(filename, "wb") as f:
         f.write(w.protobuf_serialize())
-    print("* world data saved in '%s'" % filename)
+    logger.logger.info('World data saved in %s' % filename)
     sys.stdout.flush()
 
     # Generate images
@@ -88,8 +84,8 @@ def draw_icecaps_map(world, filename):
 def check_step(step_name):
     step = Step.get_by_name(step_name)
     if step is None:
-        print("ERROR: unknown step name, using default 'full'")
-        return Step.get_by_name("full")
+        logger.logger.error('Unknown step name, using default \'full\'')
+        return Step.get_by_name('full')
     else:
         return step
 
@@ -114,7 +110,7 @@ def main():
 
     step = check_step(args.step)
 
-    print('starting (it could take a few minutes) ...')
+    logger.logger.debug('generation starting (it could take a few minutes) ...')
 
     world = generate_world(args.world_name, args.width, args.height,
                            args.seed, args.number_of_plates, args.output_dir,
@@ -138,24 +134,7 @@ def main():
         draw_icecaps_map(world,
                          '%s/%s_icecaps.png' % (args.output_dir, world_name))
 
-    print('...done')
-
-
-def usage(error=None):
-    print(
-        ' -------------------------------------------------------------------')
-    print(' Federico Tomassetti and Bret Curtis, 2011-2017')
-    print(' Worldengine - a world generator (v. %s)' % VERSION)
-    print(' ')
-    print(' worldengine <world_name> [operation] [options]')
-    print(' possible operations: %s' % OPERATIONS)
-    print(' use -h to see options')
-    print(
-        ' -------------------------------------------------------------------')
-    if error:
-        print("ERROR: %s" % error)
-    sys.exit(' ')
-
+    logger.logger.debug('... generation done')
 
 # -------------------------------
 if __name__ == "__main__":

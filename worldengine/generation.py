@@ -29,18 +29,18 @@ def center_land(world):
     y_sums = world.layers['elevation'].data.sum(1)  # 1 == sum along x-axis
     y_with_min_sum = y_sums.argmin()
 
-    logger.logger.info('geo.center_land: height complete')
+    logger.logger.debug('geo.center_land: height complete')
 
     x_sums = world.layers['elevation'].data.sum(0)  # 0 == sum along y-axis
     x_with_min_sum = x_sums.argmin()
 
-    logger.logger.info('geo.center_land: width complete')
+    logger.logger.debug('geo.center_land: width complete')
 
     latshift = 0
     world.layers['elevation'].data = numpy.roll(numpy.roll(world.layers['elevation'].data, -y_with_min_sum + latshift, axis=0), - x_with_min_sum, axis=1)
     world.layers['plates'].data = numpy.roll(numpy.roll(world.layers['plates'].data, -y_with_min_sum + latshift, axis=0), - x_with_min_sum, axis=1)
 
-    logger.logger.info('geo.center_land: width complete')
+    logger.logger.debug('geo.center_land: complete')
 
 
 def place_oceans_at_map_borders(world):
@@ -239,7 +239,7 @@ def generate_world(w, step):
         return w
     ErosionSimulation().execute(w, seed_dict['ErosionSimulation'])  # seed not currently used
 
-    logger.logger.info('...erosion calculated')
+    logger.logger.debug('...erosion calculated')
 
     WatermapSimulation().execute(w, seed_dict['WatermapSimulation'])  # seed not currently used
 
@@ -252,7 +252,7 @@ def generate_world(w, step):
     cm, biome_cm = BiomeSimulation().execute(w, seed_dict['BiomeSimulation'])  # seed not currently used
     for cl in cm.keys():
         count = cm[cl]
-        logger.logger.info('.%s = %i' % (str(cl), count))
+        logger.logger.debug('.%s = %i' % (str(cl), count))
 
     distrib_str = 'Biome obtained (% of total surface):'
     cl_sorted = sorted(biome_cm, key=biome_cm.get, reverse=True)
@@ -261,7 +261,7 @@ def generate_world(w, step):
         distrib_str += '\n%s = %.3f%%' % (str(cl), float(count) / sum(biome_cm.values()) * 100)
         if cl != 'ocean':
             distrib_str += ' (%.3f%% emerged surface)' % (float(count) / (sum(biome_cm.values()) - biome_cm['ocean']) * 100)
-    logger.logger.info(distrib_str)
+    logger.logger.debug(distrib_str)
 
     IcecapSimulation().execute(w, seed_dict['IcecapSimulation'])  # makes use of temperature-map
 

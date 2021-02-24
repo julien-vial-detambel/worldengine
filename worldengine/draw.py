@@ -821,4 +821,4 @@ def draw_satellite_on_file(world, filename):
 def draw_icecaps_on_file(world, filename):
     img = PNGWriter.grayscale_from_array(world.layers['icecap'].data, filename, scale_to_range=True)
     img.complete()
-    logger.logger.info('+ icecap map generated in %s' % filename)
+    logger.logger.info('Icecaps map generated in %s' % filename)

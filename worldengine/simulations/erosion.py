@@ -385,7 +385,7 @@ class ErosionSimulation(object):
                     newElevation = world.layers['elevation'].data[y, x] + (
                         diff * curve)
                     if newElevation <= world.layers['elevation'].data[ry, rx]:
-                        print('newElevation is <= than river, fix me...')
+                        logger.logger.error('newElevation is <= than river, fix me...')
                         newElevation = world.layers['elevation'].data[r, x]
                     world.layers['elevation'].data[y, x] = newElevation
         return
