@@ -5,7 +5,6 @@ from collections import namedtuple
 from worldengine.biome import biome_name_to_index, biome_index_to_name, Biome
 from worldengine.biome import Iceland
 import worldengine.protobuf.World_pb2 as Protobuf
-from worldengine.step import Step
 from worldengine.common import _equal
 from worldengine.version import __version__
 
@@ -70,7 +69,6 @@ class World(object):
                  axial_tilt,
                  n_plates,
                  ocean_level,
-                 step,
                  temperature_ranges,
                  moisture_ranges,
                  gamma_value,
@@ -85,7 +83,6 @@ class World(object):
         self.axial_tilt = axial_tilt
         self.n_plates = n_plates
         self.ocean_level = ocean_level
-        self.step = step
         self.layers = {}
     #
     # General methods
@@ -205,7 +202,6 @@ class World(object):
         p_world.generationData.seed = self.seed
         p_world.generationData.n_plates = self.n_plates
         p_world.generationData.ocean_level = self.ocean_level
-        p_world.generationData.step = self.step.name
 
         # Elevation
         self._to_protobuf_matrix(self.layers['elevation'].data, p_world.size.heightMapData)
@@ -269,10 +265,9 @@ class World(object):
     @classmethod
     def _from_protobuf_world(cls, p_world):
         w = World(p_world.name, Size(p_world.size.width, p_world.size.height),
-                  p_world.generationData.seed,
-                  GenerationParameters(p_world.generationData.n_plates,
-                        p_world.generationData.ocean_level,
-                        Step.get_by_name(p_world.generationData.step)))
+                  p_world.seed,
+                  p_world.n_plates,
+                  p_world.ocean_level)
 
         # Elevation
         e = numpy.array(World._from_protobuf_matrix(p_world.size.heightMapData))

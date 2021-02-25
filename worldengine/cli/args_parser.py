@@ -7,8 +7,6 @@ import numpy
 
 import worldengine.logger as logger
 
-STEPS = 'plates|precipitations|full'
-
 class Parser():
 
     # used for validation of directory given to parser
@@ -124,11 +122,6 @@ generation.',
                                  metavar = '%s',
                                  help = 'Specify world name used for outputs')
                                  #//default = 'seed_%i' % args.seed)
-
-        self.parser.add_argument('-t', '--step', dest = 'step',
-                                 help = 'Use step=[" + STEPS + "] to specify \
-how far to proceed in the world generation process. [default=%(default)s]',
-                                 metavar = 'STR', default = 'full')
 
         self.parser.add_argument('-x', '--width', dest='width', type = int,
                                  help = 'Width of the world to be generated \

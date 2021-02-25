@@ -25,11 +25,11 @@ message World {
 
     message BooleanMatrix {
         repeated BooleanRow rows = 1;
-    }    
+    }
 
     message IntegerMatrix {
         repeated IntegerRow rows = 1;
-    }   
+    }
 
     message DoubleQuantile {
         required int32 key = 1;
@@ -45,7 +45,6 @@ message World {
         optional int32 seed          = 1;
         optional int32 n_plates      = 2;
         optional float ocean_level   = 3;
-        optional string step         = 4;
     }
 
     // these two fields have been introduced in Worldengine 0.18.0
@@ -114,5 +113,3 @@ message World {
     // Ice-caps
     optional DoubleMatrix icecap  = 36;
 }
-
-

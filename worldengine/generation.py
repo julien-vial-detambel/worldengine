@@ -2,7 +2,6 @@ import numpy
 
 from noise import snoise2
 
-from worldengine.model.world import Step
 from worldengine.simulations.basic import find_threshold_f
 from worldengine.simulations.hydrology import WatermapSimulation
 from worldengine.simulations.irrigation import IrrigationSimulation
@@ -208,13 +207,7 @@ def _around(x, y, width, height):
     return ps
 
 
-def generate_world(w, step):
-    if isinstance(step, str):
-        step = Step.get_by_name(step)
-
-    if not step.include_precipitations:
-        return w
-
+def generate_world(w):
     # Prepare sufficient seeds for the different steps of the generation
     rng = numpy.random.RandomState(w.seed)  # create a fresh RNG in case the global RNG is compromised (i.e. has been queried an indefinite amount of times before generate_world() was called)
     sub_seeds = rng.randint(0, numpy.iinfo(numpy.int32).max, size=100)  # choose lowest common denominator (32 bit Windows numpy cannot handle a larger value)
@@ -235,8 +228,6 @@ def generate_world(w, step):
     # Precipitation with thresholds
     PrecipitationSimulation().execute(w, seed_dict['PrecipitationSimulation'])
 
-    if not step.include_erosion:
-        return w
     ErosionSimulation().execute(w, seed_dict['ErosionSimulation'])  # seed not currently used
 
     logger.logger.debug('...erosion calculated')

@@ -5,7 +5,7 @@ import platec
 import time
 import numpy
 
-from worldengine.generation import Step, add_noise_to_elevation, center_land, \
+from worldengine.generation import add_noise_to_elevation, center_land, \
     generate_world, initialize_ocean_and_thresholds, place_oceans_at_map_borders
 from worldengine.model.world import World
 
@@ -34,29 +34,28 @@ Elapsed time {} seconds.'.format(elapsed_time))
     return hm, pm
 
 
-def _plates_simulation(name, width, height, axial_tilt, seed, temps=
-                       [.874, .765, .594, .439, .366, .124], humids=
+def _plates_simulation(name, width, height, axial_tilt, seed, temperature_ranges=
+                       [.874, .765, .594, .439, .366, .124], moisture_ranges=
                        [.941, .778, .507, .236, 0.073, .014, .002], gamma_value=1.25,
-                       gamma_offset=.2, n_plates=10, ocean_level=1.0,
-                       step=Step.full()):
+                       gamma_offset=.2, n_plates=10, ocean_level=1.0):
     e_as_array, p_as_array = generate_plates_simulation(seed, width, height, axial_tilt,
                                                         n_plates=n_plates)
 
     world = World(name, width, height, seed, axial_tilt,
-                  n_plates, ocean_level, step,
-                  temps, humids, gamma_value, gamma_offset)
+                  n_plates, ocean_level,
+                  temperature_ranges, moisture_ranges, gamma_value, gamma_offset)
     world.elevation = (numpy.array(e_as_array).reshape(height, width), None)
     world.plates = numpy.array(p_as_array, dtype=numpy.uint16).reshape(height, width)
     return world
 
 
-def world_gen(name, width, height, axial_tilt, seed, temps=[.874, .765, .594, .439, .366, .124],
-              humids=[.941, .778, .507, .236, 0.073, .014, .002], n_plates=10,
-              ocean_level=1.0, step=Step.full(), gamma_value=1.25, gamma_offset=.2,
+def world_gen(name, width, height, axial_tilt, seed, temperature_ranges=[.874, .765, .594, .439, .366, .124],
+              moisture_ranges=[.941, .778, .507, .236, 0.073, .014, .002], n_plates=10,
+              ocean_level=1.0, gamma_value=1.25, gamma_offset=.2,
               fade_borders=True):
     start_time = time.time()
-    world = _plates_simulation(name, width, height, axial_tilt, seed, temps, humids, gamma_value,
-                               gamma_offset, n_plates, ocean_level, step)
+    world = _plates_simulation(name, width, height, axial_tilt, seed, temperature_ranges, moisture_ranges, gamma_value,
+                               gamma_offset, n_plates, ocean_level)
 
     center_land(world)
     elapsed_time = time.time() - start_time
@@ -77,4 +76,4 @@ time {} seconds.'.format(elapsed_time))
     logger.logger.debug('...plates.world_gen: oceans initialized. Elapsed \
 time {} seconds.'.format(elapsed_time))
 
-    return generate_world(world, step)
+    return generate_world(world)

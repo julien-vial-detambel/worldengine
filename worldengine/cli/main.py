@@ -11,8 +11,7 @@ from worldengine.draw import draw_biome_on_file, draw_ocean_on_file, \
     draw_satellite_on_file, draw_icecaps_on_file
 from worldengine.imex import export
 from worldengine.model.world import World
-from worldengine.plates import world_gen, generate_plates_simulation
-from worldengine.step import Step
+from worldengine.simulations.plates import world_gen, generate_plates_simulation
 from worldengine.version import __version__
 
 # import global logger
@@ -22,14 +21,11 @@ from args_parser import Parser
 
 VERSION = __version__
 
-STEPS = 'plates|precipitations|full'
-
-
 def generate_world(name, width, height, seed, n_plates, output_dir,
-                   step, ocean_level, temperature_ranges, moisture_ranges, axial_tilt,
+                   ocean_level, temperature_ranges, moisture_ranges, axial_tilt,
                    gamma_value=1.25, gamma_offset=.2, fade_borders=True, black_and_white=False):
     w = world_gen(name, width, height, axial_tilt, seed, temperature_ranges, moisture_ranges, n_plates, ocean_level,
-                  step, gamma_value=gamma_value, gamma_offset=gamma_offset,
+                  gamma_value=gamma_value, gamma_offset=gamma_offset,
                   fade_borders=fade_borders)
 
     # TODO: serialization if temporarly disabled must be reenabled
@@ -43,16 +39,14 @@ def generate_world(name, width, height, seed, n_plates, output_dir,
     filename = '%s/%s_ocean.png' % (output_dir, name)
     draw_ocean_on_file(w.layers['ocean'].data, filename)
 
-    if step.include_precipitations:
-        filename = '%s/%s_precipitation.png' % (output_dir, name)
-        draw_precipitation_on_file(w, filename, black_and_white)
+    filename = '%s/%s_precipitation.png' % (output_dir, name)
+    draw_precipitation_on_file(w, filename, black_and_white)
 
-        filename = '%s/%s_temperature.png' % (output_dir, name)
-        draw_temperature_levels_on_file(w, filename, black_and_white)
+    filename = '%s/%s_temperature.png' % (output_dir, name)
+    draw_temperature_levels_on_file(w, filename, black_and_white)
 
-    if step.include_biome:
-        filename = '%s/%s_biome.png' % (output_dir, name)
-        draw_biome_on_file(w, filename)
+    filename = '%s/%s_biome.png' % (output_dir, name)
+    draw_biome_on_file(w, filename)
 
     filename = '%s/%s_elevation.png' % (output_dir, name)
     sea_level = w.sea_level()
@@ -80,15 +74,6 @@ def draw_icecaps_map(world, filename):
     draw_icecaps_on_file(world, filename)
 
 
-def check_step(step_name):
-    step = Step.get_by_name(step_name)
-    if step is None:
-        logger.logger.error('Unknown step name, using default \'full\'')
-        return Step.get_by_name('full')
-    else:
-        return step
-
-
 def main():
     # initializing logger
     logger.init()
@@ -107,19 +92,13 @@ def main():
     if not args.name:
         args.name = 'seed_%i' % args.seed
 
-    step = check_step(args.step)
-
     logger.logger.debug('generation starting (it could take a few minutes) ...')
 
-    """world = World(args.name, Size(args.width, args.height), seed, axial_tilt,
-                  GenerationParameters(n_plates, ocean_level, step),
-                  temps, humids, gamma_value, gamma_offset)"""
-
-    #world = World(args.name, args.width, args.height, args.seed, args.axial_tilt, args.n_plates, args.ocean_level, step)
+    #world = World(args.name, args.width, args.height, args.seed, args.axial_tilt, args.n_plates, args.ocean_level, args.temp, args.moisture_ranges, args.gamma_value, args.gamma_offset)
 
     world = generate_world(args.name, args.width, args.height,
                            args.seed, args.n_plates, args.output_dir,
-                           step, args.ocean_level, args.temperature_ranges,
+                           args.ocean_level, args.temperature_ranges,
                            args.moisture_ranges, args.axial_tilt,
                            gamma_value=args.gamma_value, gamma_offset=args.gamma_offset,
                            fade_borders=args.fade_borders, black_and_white=args.black_and_white)
