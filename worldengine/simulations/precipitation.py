@@ -33,10 +33,10 @@ class PrecipitationSimulation(object):
         rng = numpy.random.RandomState(seed)  # create our own random generator
         base = rng.randint(0, 4096)
 
-        curve_gamma = world.gamma_curve
-        curve_bonus = world.curve_offset
-        height = world.height
-        width = world.width
+        curve_gamma = world.gamma_value
+        curve_bonus = world.gamma_offset
+        height = world.size.height
+        width = world.size.width
         border = width / 4
         precipitations = numpy.zeros((height, width), dtype=float)
 

@@ -48,28 +48,28 @@ def place_oceans_at_map_borders(world):
     Lower the elevation near the border of the map
     """
 
-    ocean_border = int(min(30, max(world.width / 5, world.height / 5)))
+    ocean_border = int(min(30, max(world.size.width / 5, world.size.height / 5)))
 
     def place_ocean(x, y, i):
         world.layers['elevation'].data[y, x] = \
             (world.layers['elevation'].data[y, x] * i) / ocean_border
 
-    for x in range(world.width):
+    for x in range(world.size.width):
         for i in range(ocean_border):
             place_ocean(x, i, i)
-            place_ocean(x, world.height - i - 1, i)
+            place_ocean(x, world.size.height - i - 1, i)
 
-    for y in range(world.height):
+    for y in range(world.size.height):
         for i in range(ocean_border):
             place_ocean(i, y, i)
-            place_ocean(world.width - i - 1, y, i)
+            place_ocean(world.size.width - i - 1, y, i)
 
 
 def add_noise_to_elevation(world, seed):
     octaves = 8
     freq = 16.0 * octaves
-    for y in range(world.height):
-        for x in range(world.width):
+    for y in range(world.size.height):
+        for x in range(world.size.width):
             n = snoise2(x / freq * 2, y / freq * 2, octaves, base=seed)
             world.layers['elevation'].data[y, x] += n
 
@@ -181,8 +181,8 @@ def sea_depth(world, sea_level):
 
     sea_depth = sea_level - world.layers['elevation'].data
 
-    for y in range(world.height):
-        for x in range(world.width):
+    for y in range(world.size.height):
+        for x in range(world.size.width):
             dist_to_next_land = next_land[y,x]
             if dist_to_next_land > 0:
                 sea_depth[y,x]*=factors[dist_to_next_land-1]

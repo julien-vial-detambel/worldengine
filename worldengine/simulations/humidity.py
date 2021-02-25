@@ -15,10 +15,10 @@ class HumiditySimulation(object):
 
     @staticmethod
     def _calculate(world):
-        humids = world.humids
+        humids = world.moisture_ranges
         precipitationWeight = 1.0
         irrigationWeight = 3
-        data = numpy.zeros((world.height, world.width), dtype=float)
+        data = numpy.zeros((world.size.height, world.size.width), dtype=float)
 
         data = (world.layers['precipitation'].data * precipitationWeight - world.layers['irrigation'].data * irrigationWeight)/(precipitationWeight + irrigationWeight)
 

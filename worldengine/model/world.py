@@ -1,5 +1,7 @@
 import numpy
 
+from collections import namedtuple
+
 from worldengine.biome import biome_name_to_index, biome_index_to_name, Biome
 from worldengine.biome import Iceland
 import worldengine.protobuf.World_pb2 as Protobuf
@@ -7,19 +9,7 @@ from worldengine.step import Step
 from worldengine.common import _equal
 from worldengine.version import __version__
 
-
-class Size(object):
-
-    def __init__(self, width, height):
-        self.width = width
-        self.height = height
-
-    def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            return self.__dict__ == other.__dict__
-        else:
-            return False
-
+Size = namedtuple('Size', ['width', 'height'])
 
 class GenerationParameters(object):
 
@@ -86,17 +76,23 @@ class World(object):
     each cell.
     """
 
-    def __init__(self, name, size, seed, axial_tilt, generation_params,
-                 temps=[0.874, 0.765, 0.594, 0.439, 0.366, 0.124],
-                 humids = [.941, .778, .507, .236, 0.073, .014, .002],
-                 gamma_curve=1.25, curve_offset=.2):
+    def __init__(self,
+                 name,
+                 size,
+                 seed,
+                 axial_tilt,
+                 generation_params,
+                 temperature_ranges,
+                 moisture_ranges,
+                 gamma_value,
+                 gamma_offset):
         self.name = name
         self.size = size
         self.seed = seed
-        self.temps = temps
-        self.humids = humids
-        self.gamma_curve = gamma_curve
-        self.curve_offset = curve_offset
+        self.temperature_ranges = temperature_ranges
+        self.moisture_ranges = moisture_ranges
+        self.gamma_value = gamma_value
+        self.gamma_offset = gamma_offset
         self.axial_tilt = axial_tilt
 
         self.generation_params = generation_params
@@ -104,8 +100,6 @@ class World(object):
         self.layers = {}
 
         # Deprecated
-        self.width = size.width
-        self.height = size.height
         self.n_plates = generation_params.n_plates
         self.step = generation_params.step
         self.ocean_level = generation_params.ocean_level
@@ -222,8 +216,8 @@ class World(object):
         p_world.worldengine_version = self.__version_hashcode__()
 
         p_world.name = self.name
-        p_world.width = self.width
-        p_world.height = self.height
+        p_world.size.width = self.size.width
+        p_world.size.height = self.size.height
 
         p_world.generationData.seed = self.seed
         p_world.generationData.n_plates = self.n_plates
@@ -231,10 +225,10 @@ class World(object):
         p_world.generationData.step = self.step.name
 
         # Elevation
-        self._to_protobuf_matrix(self.layers['elevation'].data, p_world.heightMapData)
-        p_world.heightMapTh_sea = self.layers['elevation'].thresholds[0][1]
-        p_world.heightMapTh_plain = self.layers['elevation'].thresholds[1][1]
-        p_world.heightMapTh_hill = self.layers['elevation'].thresholds[2][1]
+        self._to_protobuf_matrix(self.layers['elevation'].data, p_world.size.heightMapData)
+        p_world.size.heightMapTh_sea = self.layers['elevation'].thresholds[0][1]
+        p_world.size.heightMapTh_plain = self.layers['elevation'].thresholds[1][1]
+        p_world.size.heightMapTh_hill = self.layers['elevation'].thresholds[2][1]
 
         # Plates
         self._to_protobuf_matrix(self.layers['plates'].data, p_world.plates)
@@ -291,17 +285,17 @@ class World(object):
 
     @classmethod
     def _from_protobuf_world(cls, p_world):
-        w = World(p_world.name, Size(p_world.width, p_world.height),
+        w = World(p_world.name, Size(p_world.size.width, p_world.size.height),
                   p_world.generationData.seed,
                   GenerationParameters(p_world.generationData.n_plates,
                         p_world.generationData.ocean_level,
                         Step.get_by_name(p_world.generationData.step)))
 
         # Elevation
-        e = numpy.array(World._from_protobuf_matrix(p_world.heightMapData))
-        e_th = [('sea', p_world.heightMapTh_sea),
-                ('plain', p_world.heightMapTh_plain),
-                ('hill', p_world.heightMapTh_hill),
+        e = numpy.array(World._from_protobuf_matrix(p_world.size.heightMapData))
+        e_th = [('sea', p_world.size.heightMapTh_sea),
+                ('plain', p_world.size.heightMapTh_plain),
+                ('hill', p_world.size.heightMapTh_hill),
                 ('mountain', None)]
         w.elevation = (e, e_th)
 
@@ -379,7 +373,7 @@ class World(object):
     #
 
     def contains(self, pos):
-        return 0 <= pos[0] < self.width and 0 <= pos[1] < self.height
+        return 0 <= pos[0] < self.size.width and 0 <= pos[1] < self.size.height
 
     #
     # Land/Ocean
@@ -418,10 +412,10 @@ class World(object):
         x, y = pos
         for dx in range(-radius, radius + 1):
             nx = x + dx
-            if 0 <= nx < self.width:
+            if 0 <= nx < self.size.width:
                 for dy in range(-radius, radius + 1):
                     ny = y + dy
-                    if 0 <= ny < self.height and (dx != 0 or dy != 0):
+                    if 0 <= ny < self.size.height and (dx != 0 or dy != 0):
                         if predicate is None or predicate((nx, ny)):
                             ps.append((nx, ny))
         return ps
@@ -701,11 +695,11 @@ class World(object):
         except ValueError:
             raise ValueError("Pass an iterable: (data, thresholds)")
         else:
-            if data.shape != (self.height, self.width):
+            if data.shape != (self.size.height, self.size.width):
                 raise Exception(
                     "Setting elevation map with wrong dimension. "
                     "Expected %d x %d, found %d x %d" % (
-                        self.width, self.height, data.shape[1], data.shape[0]))
+                        self.size.width, self.size.height, data.shape[1], data.shape[0]))
             self.layers['elevation'] = LayerWithThresholds(data, thresholds)
 
     @property
@@ -714,11 +708,11 @@ class World(object):
 
     @plates.setter
     def plates(self, data):
-        if (data.shape[0] != self.height) or (data.shape[1] != self.width):
+        if (data.shape[0] != self.size.height) or (data.shape[1] != self.size.width):
             raise Exception(
                 "Setting plates map with wrong dimension. "
                 "Expected %d x %d, found %d x %d" % (
-                    self.width, self.height, data.shape[1], data.shape[0]))
+                    self.size.width, self.size.height, data.shape[1], data.shape[0]))
         self.layers['plates'] = Layer(data)
 
     @property
@@ -727,12 +721,12 @@ class World(object):
 
     @biome.setter
     def biome(self, biome):
-        if biome.shape[0] != self.height:
+        if biome.shape[0] != self.size.height:
             raise Exception(
                 "Setting data with wrong height: biome has height %i while "
                 "the height is currently %i" % (
-                    biome.shape[0], self.height))
-        if biome.shape[1] != self.width:
+                    biome.shape[0], self.size.height))
+        if biome.shape[1] != self.size.width:
             raise Exception("Setting data with wrong width")
         self.layers['biome'] = Layer(biome)
 
@@ -742,10 +736,10 @@ class World(object):
 
     @ocean.setter
     def ocean(self, ocean):
-        if (ocean.shape[0] != self.height) or (ocean.shape[1] != self.width):
+        if (ocean.shape[0] != self.size.height) or (ocean.shape[1] != self.size.width):
             raise Exception(
                 "Setting ocean map with wrong dimension. Expected %d x %d, "
-                "found %d x %d" % (self.width, self.height,
+                "found %d x %d" % (self.size.width, self.size.height,
                                    ocean.shape[1], ocean.shape[0]))
         self.layers['ocean'] = Layer(ocean)
 
@@ -755,10 +749,10 @@ class World(object):
 
     @sea_depth.setter
     def sea_depth(self, data):
-        if (data.shape[0] != self.height) or (data.shape[1] != self.width):
+        if (data.shape[0] != self.size.height) or (data.shape[1] != self.size.width):
             raise Exception(
                 "Setting sea depth map with wrong dimension. Expected %d x %d, "
-                "found %d x %d" % (self.width, self.height,
+                "found %d x %d" % (self.size.width, self.size.height,
                                    data.shape[1], data.shape[0]))
         self.layers['sea_depth'] = Layer(data)
 
@@ -774,9 +768,9 @@ class World(object):
         except ValueError:
             raise ValueError("Pass an iterable: (data, thresholds)")
         else:
-            if data.shape[0] != self.height:
+            if data.shape[0] != self.size.height:
                 raise Exception("Setting data with wrong height")
-            if data.shape[1] != self.width:
+            if data.shape[1] != self.size.width:
                 raise Exception("Setting data with wrong width")
             self.layers['precipitation'] = LayerWithThresholds(data, thresholds)
 
@@ -792,9 +786,9 @@ class World(object):
         except ValueError:
             raise ValueError("Pass an iterable: (data, quantiles)")
         else:
-            if data.shape[0] != self.height:
+            if data.shape[0] != self.size.height:
                 raise Exception("Setting data with wrong height")
-            if data.shape[1] != self.width:
+            if data.shape[1] != self.size.width:
                 raise Exception("Setting data with wrong width")
             self.layers['humidity'] = LayerWithQuantiles(data, quantiles)
 
@@ -804,9 +798,9 @@ class World(object):
 
     @irrigation.setter
     def irrigation(self, data):
-        if data.shape[0] != self.height:
+        if data.shape[0] != self.size.height:
             raise Exception("Setting data with wrong height")
-        if data.shape[1] != self.width:
+        if data.shape[1] != self.size.width:
             raise Exception("Setting data with wrong width")
         self.layers['irrigation'] = Layer(data)
 
@@ -821,9 +815,9 @@ class World(object):
         except ValueError:
             raise ValueError("Pass an iterable: (data, thresholds)")
         else:
-            if data.shape[0] != self.height:
+            if data.shape[0] != self.size.height:
                 raise Exception("Setting data with wrong height")
-            if data.shape[1] != self.width:
+            if data.shape[1] != self.size.width:
                 raise Exception("Setting data with wrong width")
             self.layers['temperature'] = LayerWithThresholds(data, thresholds)
 
@@ -838,9 +832,9 @@ class World(object):
         except ValueError:
             raise ValueError("Pass an iterable: (data, thresholds)")
         else:
-            if data.shape[0] != self.height:
+            if data.shape[0] != self.size.height:
                 raise Exception("Setting data with wrong height")
-            if data.shape[1] != self.width:
+            if data.shape[1] != self.size.width:
                 raise Exception("Setting data with wrong width")
             self.layers['permeability'] = LayerWithThresholds(data, thresholds)
 
@@ -855,9 +849,9 @@ class World(object):
         except ValueError:
             raise ValueError("Pass an iterable: (data, thresholds)")
         else:
-            if data.shape[0] != self.height:
+            if data.shape[0] != self.size.height:
                 raise Exception("Setting data with wrong height")
-            if data.shape[1] != self.width:
+            if data.shape[1] != self.size.width:
                 raise Exception("Setting data with wrong width")
             self.layers['watermap'] = LayerWithThresholds(data, thresholds)
 

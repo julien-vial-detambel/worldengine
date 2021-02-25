@@ -36,15 +36,15 @@ def generate_plates_simulation(seed, width, height, axial_tilt, sea_level=0.65,
 
 def _plates_simulation(name, width, height, axial_tilt, seed, temps=
                        [.874, .765, .594, .439, .366, .124], humids=
-                       [.941, .778, .507, .236, 0.073, .014, .002], gamma_curve=1.25,
-                       curve_offset=.2, num_plates=10, ocean_level=1.0,
+                       [.941, .778, .507, .236, 0.073, .014, .002], gamma_value=1.25,
+                       gamma_offset=.2, num_plates=10, ocean_level=1.0,
                        step=Step.full()):
     e_as_array, p_as_array = generate_plates_simulation(seed, width, height, axial_tilt,
                                                         num_plates=num_plates)
 
     world = World(name, Size(width, height), seed, axial_tilt,
                   GenerationParameters(num_plates, ocean_level, step),
-                  temps, humids, gamma_curve, curve_offset)
+                  temps, humids, gamma_value, gamma_offset)
     world.elevation = (numpy.array(e_as_array).reshape(height, width), None)
     world.plates = numpy.array(p_as_array, dtype=numpy.uint16).reshape(height, width)
     return world
@@ -52,11 +52,11 @@ def _plates_simulation(name, width, height, axial_tilt, seed, temps=
 
 def world_gen(name, width, height, axial_tilt, seed, temps=[.874, .765, .594, .439, .366, .124],
               humids=[.941, .778, .507, .236, 0.073, .014, .002], num_plates=10,
-              ocean_level=1.0, step=Step.full(), gamma_curve=1.25, curve_offset=.2,
+              ocean_level=1.0, step=Step.full(), gamma_value=1.25, gamma_offset=.2,
               fade_borders=True):
     start_time = time.time()
-    world = _plates_simulation(name, width, height, axial_tilt, seed, temps, humids, gamma_curve,
-                               curve_offset, num_plates, ocean_level, step)
+    world = _plates_simulation(name, width, height, axial_tilt, seed, temps, humids, gamma_value,
+                               gamma_offset, num_plates, ocean_level, step)
 
     center_land(world)
     elapsed_time = time.time() - start_time

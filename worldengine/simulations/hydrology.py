@@ -56,7 +56,7 @@ class WatermapSimulation(object):
             else:
                 _watermap[y, x] += q
 
-        _watermap_data = numpy.zeros((world.height, world.width), dtype=float)
+        _watermap_data = numpy.zeros((world.size.height, world.size.width), dtype=float)
 
         # This indirectly calls the global rng.
         # We want different implementations of _watermap 

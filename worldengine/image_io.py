@@ -75,7 +75,7 @@ class PNGWriter(object):
         Calling the generic constructor gives full control over the created PNG
         file but it is very much recommended to use the appropriate static
         constructors instead (or add one if it is missing).
-        
+
         The default settings are chosen to represent a standard RGB image.
         """
         self.img = None

@@ -18,20 +18,20 @@ class TemperatureSimulation(object):
 
         t = self._calculate(world, seed, e, ml)
         t_th = [
-            ('polar', find_threshold_f(t, world.temps[0], ocean)),
-            ('alpine', find_threshold_f(t, world.temps[1], ocean)),
-            ('boreal', find_threshold_f(t, world.temps[2], ocean)),
-            ('cool', find_threshold_f(t, world.temps[3], ocean)),
-            ('warm', find_threshold_f(t, world.temps[4], ocean)),
-            ('subtropical', find_threshold_f(t, world.temps[5], ocean)),
+            ('polar', find_threshold_f(t, world.temperature_ranges[0], ocean)),
+            ('alpine', find_threshold_f(t, world.temperature_ranges[1], ocean)),
+            ('boreal', find_threshold_f(t, world.temperature_ranges[2], ocean)),
+            ('cool', find_threshold_f(t, world.temperature_ranges[3], ocean)),
+            ('warm', find_threshold_f(t, world.temperature_ranges[4], ocean)),
+            ('subtropical', find_threshold_f(t, world.temperature_ranges[5], ocean)),
             ('tropical', None)
         ]
         world.temperature = (t, t_th)
 
     @staticmethod
     def _calculate(world, seed, elevation, mountain_level):
-        width = world.width
-        height = world.height
+        width = world.size.width
+        height = world.size.height
 
         rng = numpy.random.RandomState(seed)  # create our own random generator
         # base int used in noise function

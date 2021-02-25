@@ -51,42 +51,42 @@ class Parser():
         return gv
 
     # used for validation of temperature ranges
-    def temperature_ranges(self, temp_ranges):
-        temp_ranges = str(temp_ranges)
-        if len(temp_ranges.split('/')) is not 6:
+    def temperature_ranges(self, temperature_ranges):
+        temperature_ranges = str(temperature_ranges)
+        if len(temperature_ranges.split('/')) is not 6:
             raise argparse.ArgumentTypeError('Temperature ranges must have ' +
                                              'exactly 6 floating point values')
-        temp_ranges = temp_ranges.split('/')
-        for x in range(0, len(temp_ranges)):
-            temp_ranges[x] = 1 - float(temp_ranges[x])
+        temperature_ranges = temperature_ranges.split('/')
+        for x in range(0, len(temperature_ranges)):
+            temperature_ranges[x] = 1 - float(temperature_ranges[x])
 
-        if temp_ranges != sorted(temp_ranges, reverse = True):
+        if temperature_ranges != sorted(temperature_ranges, reverse = True):
             logger.logger.warning('Temperature array not in ascending order')
-        if numpy.amin(temp_ranges) < 0:
+        if numpy.amin(temperature_ranges) < 0:
             logger.logger.warning('Maximum value in temperature array greater than 1')
-        if numpy.amax(temp_ranges) > 1:
+        if numpy.amax(temperature_ranges) > 1:
             logger.logger.warning('Minimum value in temperature array less than 0')
 
-        return temp_ranges
+        return temperature_ranges
 
     # used for validation of moisture ranges
-    def moisture_ranges(self, moist_ranges):
-        moist_ranges = str(moist_ranges)
-        if len(moist_ranges.split('/')) is not 7:
+    def moisture_ranges(self, moisture_ranges):
+        moisture_ranges = str(moisture_ranges)
+        if len(moisture_ranges.split('/')) is not 7:
             raise argparse.ArgumentTypeError('Moisture ranges must have ' +
                                              'exactly 7 floating point values')
-        moist_ranges = moist_ranges.split('/')
-        for x in range(0, len(moist_ranges)):
-            moist_ranges[x] = 1 - float(moist_ranges[x])
+        moisture_ranges = moisture_ranges.split('/')
+        for x in range(0, len(moisture_ranges)):
+            moisture_ranges[x] = 1 - float(moisture_ranges[x])
 
-        if moist_ranges != sorted(moist_ranges, reverse = True):
+        if moisture_ranges != sorted(moisture_ranges, reverse = True):
             logger.logger.warning('Humidity array not in ascending order')
-        if numpy.amin(moist_ranges) < 0:
+        if numpy.amin(moisture_ranges) < 0:
             logger.logger.warning('Maximum value in humidity array greater than 1')
-        if numpy.amax(moist_ranges) > 1:
+        if numpy.amax(moisture_ranges) > 1:
             logger.logger.warning('Minimum value in temperature array less than 0')
 
-        return moist_ranges
+        return moisture_ranges
 
     # used for seed validation
     def seed(self, seed):
@@ -177,7 +177,7 @@ class Parser():
                                 metavar="N", default=1.0)
 
         # exposing temperature ranges
-        generation_args.add_argument('--temp_ranges', dest = 'temp_ranges',
+        generation_args.add_argument('--temperature_ranges', dest = 'temperature_ranges',
                                      metavar = '%f/%f/%f/%f/%f/%f',
                                      help = 'Provide alternate ranges for ' +
                                      'temperatures. [default = %(default)s]',
@@ -185,7 +185,7 @@ class Parser():
                                      type = self.temperature_ranges)
 
         # exposing moisture ranges
-        generation_args.add_argument('--moist_ranges', dest = 'moist_ranges',
+        generation_args.add_argument('--moisture_ranges', dest = 'moisture_ranges',
                                      metavar = '%f/%f/%f/%f/%f/%f/%f',
                                      help = 'Provide alternate ranges for ' +
                                      'moisture. [default = %(default)s]',

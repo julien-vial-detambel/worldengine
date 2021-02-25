@@ -43,8 +43,8 @@ def draw_rivers_on_image(world, target, factor=1):
     """Draw only the rivers, it expect the background to be in place
     """
 
-    for y in range(world.height):
-        for x in range(world.width):
+    for y in range(world.size.height):
+        for x in range(world.size.width):
             if world.is_land((x, y)) and (world.layers['river_map'].data[y, x] > 0.0):
                 for dx in range(factor):
                     for dy in range(factor):
@@ -60,7 +60,7 @@ def draw_rivers_on_image(world, target, factor=1):
 # -------------------
 
 def _find_mountains_mask(world, factor):
-    _mask = numpy.zeros((world.height, world.width), float)
+    _mask = numpy.zeros((world.size.height, world.size.width), float)
     _mask[world.elevation>world.get_mountain_level()] = 1.0
 
     # disregard elevated oceans
@@ -85,7 +85,7 @@ def _build_biome_group_masks(world, factor):
     biome_masks = {}
 
     for group in biome_groups:
-        group_mask = numpy.zeros((world.height, world.width), float)
+        group_mask = numpy.zeros((world.size.height, world.size.width), float)
 
         for biome in group.__subclasses__():
             group_mask[world.biome==_un_camelize(biome.__name__)] += 1.0

@@ -46,14 +46,14 @@ class IcecapSimulation(object):
         freeze_chance_threshold = freeze_threshold * (1.0 - freeze_chance_window)
 
         # local variables
-        icecap = numpy.zeros((world.height, world.width), dtype=float)
+        icecap = numpy.zeros((world.size.height, world.size.width), dtype=float)
         rng = numpy.random.RandomState(seed)  # create our own random generator
 
         # map that is True whenever there is land or (certain) ice around
         solid_map = numpy.logical_or(temperature <= freeze_chance_threshold + temp_min, numpy.logical_not(ocean))
 
-        for y in range(world.height):
-            for x in range(world.width):
+        for y in range(world.size.height):
+            for x in range(world.size.width):
                 if world.is_ocean((x, y)):  # or world.river_map[y, x] > 0 or world.lake_map[y, x] > 0 or world.watermap['data'][y, x] > 0:
                     t = temperature[y, x]
                     if t - temp_min < freeze_threshold:
@@ -63,7 +63,7 @@ class IcecapSimulation(object):
                         # *can* freeze for freeze_chance_threshold < t < freeze_threshold
 
                         # count number of frozen/solid tiles around this one
-                        if 0 < x < world.width - 1 and 0 < y < world.height - 1:  # exclude borders
+                        if 0 < x < world.size.width - 1 and 0 < y < world.size.height - 1:  # exclude borders
                             surr_tiles = solid_map[y-1:y+2, x-1:x+2]
                             chance_mod = numpy.count_nonzero(surr_tiles)
                             chance_mod -= 1 if solid_map[y, x] else 0  # remove center-tile (i.e. the current tile)

@@ -11,8 +11,8 @@ class BiomeSimulation(object):
     def execute(world, seed):
         assert seed is not None
         w = world
-        width = world.width
-        height = world.height
+        width = world.size.width
+        height = world.size.height
         ocean = world.layers['ocean'].data
         cm = {}
         biome_cm = {}

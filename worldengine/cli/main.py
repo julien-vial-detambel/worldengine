@@ -1,6 +1,5 @@
 # -*- coding: UTF-8 -*-
 
-import sys
 from argparse import ArgumentTypeError
 
 import numpy
@@ -27,18 +26,18 @@ STEPS = 'plates|precipitations|full'
 
 
 def generate_world(world_name, width, height, seed, num_plates, output_dir,
-                   step, ocean_level, temp_ranges, moist_ranges, axial_tilt,
-                   gamma_curve=1.25, curve_offset=.2, fade_borders=True, black_and_white=False):
-    w = world_gen(world_name, width, height, axial_tilt, seed, temp_ranges, moist_ranges, num_plates, ocean_level,
-                  step, gamma_curve=gamma_curve, curve_offset=curve_offset,
+                   step, ocean_level, temperature_ranges, moisture_ranges, axial_tilt,
+                   gamma_value=1.25, gamma_offset=.2, fade_borders=True, black_and_white=False):
+    w = world_gen(world_name, width, height, axial_tilt, seed, temperature_ranges, moisture_ranges, num_plates, ocean_level,
+                  step, gamma_value=gamma_value, gamma_offset=gamma_offset,
                   fade_borders=fade_borders)
 
+    # TODO: serialization if temporarly disabled must be reenabled
     # Save data
-    filename = "%s/%s.world" % (output_dir, world_name)
-    with open(filename, "wb") as f:
-        f.write(w.protobuf_serialize())
-    logger.logger.info('World data saved in %s' % filename)
-    sys.stdout.flush()
+    # filename = "%s/%s.world" % (output_dir, world_name)
+    # with open(filename, "wb") as f:
+    #    f.write(w.protobuf_serialize())
+    #logger.logger.info('World data saved in %s' % filename)
 
     # Generate images
     filename = '%s/%s_ocean.png' % (output_dir, world_name)
@@ -112,11 +111,17 @@ def main():
 
     logger.logger.debug('generation starting (it could take a few minutes) ...')
 
+    """world = World(args.name, Size(args.width, args.height), seed, axial_tilt,
+                  GenerationParameters(num_plates, ocean_level, step),
+                  temps, humids, gamma_value, gamma_offset)"""
+
+    #world = World(args.world_name, args.width, args.height, args.seed, )
+
     world = generate_world(args.world_name, args.width, args.height,
                            args.seed, args.number_of_plates, args.output_dir,
-                           step, args.ocean_level, args.temp_ranges,
-                           args.moist_ranges, args.axial_tilt,
-                           gamma_curve=args.gv, curve_offset=args.go,
+                           step, args.ocean_level, args.temperature_ranges,
+                           args.moisture_ranges, args.axial_tilt,
+                           gamma_value=args.gv, gamma_offset=args.go,
                            fade_borders=args.fade_borders, black_and_white=args.black_and_white)
     if args.grayscale_heightmap:
         generate_grayscale_heightmap(world,

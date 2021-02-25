@@ -36,12 +36,12 @@ class ErosionSimulation(object):
         return world.has_precipitations()
 
     def execute(self, world, seed):
-        water_flow = numpy.zeros((world.height, world.width))
-        water_path = numpy.zeros((world.height, world.width), dtype=int)
+        water_flow = numpy.zeros((world.size.height, world.size.width))
+        water_path = numpy.zeros((world.size.height, world.size.width), dtype=int)
         river_list = []
         lake_list = []
-        river_map = numpy.zeros((world.height, world.width))
-        lake_map = numpy.zeros((world.height, world.width))
+        river_map = numpy.zeros((world.size.height, world.size.width))
+        lake_map = numpy.zeros((world.size.height, world.size.width))
 
         # step one: water flow per cell based on rainfall
         self.find_water_flow(world, water_path)
@@ -77,8 +77,8 @@ class ErosionSimulation(object):
         """Find the flow direction for each cell in heightmap"""
 
         # iterate through each cell
-        for x in range(world.width - 1):
-            for y in range(world.height - 1):
+        for x in range(world.size.width - 1):
+            for y in range(world.size.height - 1):
                 # search around cell for a direction
                 path = self.find_quick_path([x, y], world)
                 if path:
@@ -110,7 +110,7 @@ class ErosionSimulation(object):
             if not self.wrap and not world.contains(temp_dir):
                 continue
 
-            tx, ty = overflow(tx, world.width), overflow(ty, world.height)
+            tx, ty = overflow(tx, world.size.width), overflow(ty, world.size.height)
 
             elevation = world.layers['elevation'].data[ty, tx]
 
@@ -138,8 +138,8 @@ class ErosionSimulation(object):
         #     we mark them as rivers. While looking, the cells with no
         #     out-going flow, above water flow threshold and are still
         #     above sea level are marked as 'sources'.
-        for y in range(0, world.height - 1):
-            for x in range(0, world.width - 1):
+        for y in range(0, world.size.height - 1):
+            for x in range(0, world.size.width - 1):
                 rain_fall = world.layers['precipitation'].data[y, x]
                 water_flow[y, x] = rain_fall
 
@@ -189,8 +189,8 @@ class ErosionSimulation(object):
             for dx, dy in DIR_NEIGHBORS:
                 ax, ay = x + dx, y + dy
                 if self.wrap:
-                    ax, ay = overflow(ax, world.width), overflow(ay,
-                                                                 world.height)
+                    ax, ay = overflow(ax, world.size.width), overflow(ay,
+                                                                 world.size.height)
 
                 for river in river_list:
                     if [ax, ay] in river:
@@ -232,7 +232,7 @@ class ErosionSimulation(object):
                 cx, cy = current_location
                 lx, ly = lower_elevation
 
-                if x < 0 or y < 0 or x > world.width or y > world.height:
+                if x < 0 or y < 0 or x > world.size.width or y > world.size.height:
                     raise Exception(
                         "BUG: fix me... we shouldn't be here: %s %s" % (
                             current_location, lower_elevation))
@@ -241,18 +241,18 @@ class ErosionSimulation(object):
                     # are we wrapping on x axis?
                     if cx - lx < 0:
                         lx = 0  # move to left edge
-                        nx = world.width - 1  # next step is wrapped around
+                        nx = world.size.width - 1  # next step is wrapped around
                     else:
-                        lx = world.width - 1  # move to right edge
+                        lx = world.size.width - 1  # move to right edge
                         nx = 0  # next step is wrapped around
                     ly = ny = int((cy + ly) / 2)  # move halfway
                 elif not in_circle(max_radius, cx, cy, cx, ly):
                     # are we wrapping on y axis?
                     if cy - ly < 0:
                         ly = 0  # move to top edge
-                        ny = world.height - 1  # next step is wrapped around
+                        ny = world.size.height - 1  # next step is wrapped around
                     else:
-                        ly = world.height - 1  # move to bottom edge
+                        ly = world.size.height - 1  # move to bottom edge
                         ny = 0  # next step is wrapped around
                     lx = nx = int((cx + lx) / 2)  # move halfway
                 else:
@@ -324,8 +324,8 @@ class ErosionSimulation(object):
                     if not in_circle(currentRadius, x, y, rx, ry):
                         continue
 
-                    rx, ry = overflow(rx, world.width), overflow(ry,
-                                                                 world.height)
+                    rx, ry = overflow(rx, world.size.width), overflow(ry,
+                                                                 world.size.height)
 
                     # if utilities.outOfBounds([x+cx, y+cy], self.size):
                     #                        print "Fixed:",x ,y,  rx, ry
@@ -362,7 +362,7 @@ class ErosionSimulation(object):
                     if not self.wrap and not world.contains(
                             (x, y)):  # ignore edges of map
                         continue
-                    x, y = overflow(x, world.width), overflow(y, world.height)
+                    x, y = overflow(x, world.size.width), overflow(y, world.size.height)
                     curve = 1.0
                     if [x, y] == [0, 0]:  # ignore center
                         continue

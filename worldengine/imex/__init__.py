@@ -114,7 +114,7 @@ def export(world, export_filetype='GTiff', export_datatype='float32', export_dim
     # some formats don't support being written by Create()
     inter_driver = gdal.GetDriverByName("ENVI")
     fh_inter_file, inter_file = tempfile.mkstemp()  # returns: (file-handle, absolute path)
-    intermediate_ds = inter_driver.Create(inter_file, world.width, world.height, 1, gdal_type)
+    intermediate_ds = inter_driver.Create(inter_file, world.size.width, world.size.height, 1, gdal_type)
     band = intermediate_ds.GetRasterBand(1)
     band.WriteArray(elevation)
     band = None  # dereference band

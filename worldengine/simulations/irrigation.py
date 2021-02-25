@@ -15,8 +15,8 @@ class IrrigationSimulation(object):
         #  -iterations        : width * height
         #  -memory consumption: width * height * sizeof(numpy.float) (permanent)
 
-        width = world.width
-        height = world.height
+        width = world.size.width
+        height = world.size.height
         radius = 10
 
         #create array of pre-calculated values -> less calculations

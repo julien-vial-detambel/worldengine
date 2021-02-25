@@ -347,8 +347,8 @@ def draw_simple_elevation(world, sea_level, target):
     else:
         c = ((e - min_elev_land) / elev_delta_land) + 1
 
-    for y in range(world.height):
-        for x in range(world.width):
+    for y in range(world.size.height):
+        for x in range(world.size.width):
             r, g, b = elevation_color(c[y, x], sea_level)
             target.set_pixel(x, y, (int(r * 255), int(g * 255),
                                     int(b * 255), 255))
@@ -358,8 +358,8 @@ def draw_riversmap(world, target):
     sea_color = (255, 255, 255, 255)
     land_color = (0, 0, 0, 255)
 
-    for y in range(world.height):
-        for x in range(world.width):
+    for y in range(world.size.height):
+        for x in range(world.size.width):
             target.set_pixel(x, y, sea_color if world.is_ocean((x, y)) else land_color)
 
     draw_rivers_on_image(world, target, factor=1)
@@ -368,8 +368,8 @@ def draw_riversmap(world, target):
 def draw_grayscale_heightmap(world, target):
     c = get_normalized_elevation_array(world)
 
-    for y in range(world.height):
-        for x in range(world.width):
+    for y in range(world.size.height):
+        for x in range(world.size.width):
             target.set_pixel(x, y, (c[y, x], c[y, x], c[y, x], 255))
 
 
@@ -384,8 +384,8 @@ def draw_satellite(world, target):
 
     ## The first loop sets each pixel's color based on colors defined in _biome_satellite_colors
     #  and additional "business logic" defined in get_biome_color_based_on_elevation
-    for y in range(world.height):
-        for x in range(world.width):
+    for y in range(world.size.height):
+        for x in range(world.size.width):
             # Get the normalized elevation at this pixel
             elev = elevation_mask[y, x]
 
@@ -398,16 +398,16 @@ def draw_satellite(world, target):
 
     # Paint frozen areas.
     ice_color_variation = int(30)  # 0 means perfectly white ice; must be in [0, 255]; only affects R- and G-channel
-    for y in range(world.height):
-        for x in range(world.width):
+    for y in range(world.size.height):
+        for x in range(world.size.width):
             if world.layers['icecap'].data[y, x] > 0.0:
                 smooth_mask[y, x] = True  # smooth the frozen areas, too
                 variation = rng.randint(0, ice_color_variation)
                 target.set_pixel(x, y, (255 - ice_color_variation + variation, 255 - ice_color_variation + variation, 255, 255))
 
     # Loop through and average a pixel with its neighbors to smooth transitions between biomes
-    for y in range(1, world.height-1):
-        for x in range(1, world.width-1):
+    for y in range(1, world.size.height-1):
+        for x in range(1, world.size.width-1):
             ## Only smooth land tiles
             if smooth_mask[y, x]:
                 # Lists to hold the separated rgb values of the neighboring pixels
@@ -436,8 +436,8 @@ def draw_satellite(world, target):
                     target.set_pixel(x, y, (avg_r, avg_g, avg_b, 255))
 
     ## After smoothing, draw rivers
-    for y in range(world.height):
-        for x in range(world.width):
+    for y in range(world.size.height):
+        for x in range(world.size.width):
             ## Color rivers
             if world.is_land((x, y)) and (world.layers['river_map'].data[y, x] > 0.0):
                 base_color = target[y, x]
@@ -453,8 +453,8 @@ def draw_satellite(world, target):
                 target.set_pixel(x, y, (r, g, b, 255))
 
     # "Shade" the map by sending beams of light west to east, and increasing or decreasing value of pixel based on elevation difference
-    for y in range(SAT_SHADOW_SIZE-1, world.height-SAT_SHADOW_SIZE-1):
-        for x in range(SAT_SHADOW_SIZE-1, world.width-SAT_SHADOW_SIZE-1):
+    for y in range(SAT_SHADOW_SIZE-1, world.size.height-SAT_SHADOW_SIZE-1):
+        for x in range(SAT_SHADOW_SIZE-1, world.size.width-SAT_SHADOW_SIZE-1):
             if world.is_land((x, y)):
                 r, g, b, a = target[y, x]
 
@@ -483,8 +483,8 @@ def draw_satellite(world, target):
 
 
 def draw_elevation(world, shadow, target):
-    width = world.width
-    height = world.height
+    width = world.size.width
+    height = world.size.height
 
     data = world.layers['elevation'].data
     ocean = world.layers['ocean'].data
@@ -530,8 +530,8 @@ def draw_ocean(ocean, target):
 
 def draw_precipitation(world, target, black_and_white=False):
     # FIXME we are drawing humidity, not precipitations
-    width = world.width
-    height = world.height
+    width = world.size.width
+    height = world.size.height
 
     if black_and_white:
         low = world.precipitation['data'].min()
@@ -566,8 +566,8 @@ def draw_precipitation(world, target, black_and_white=False):
 
 
 def draw_world(world, target):
-    width = world.width
-    height = world.height
+    width = world.size.width
+    height = world.size.height
 
     for y in range(height):
         for x in range(width):
@@ -580,8 +580,8 @@ def draw_world(world, target):
 
 
 def draw_temperature_levels(world, target, black_and_white=False):
-    width = world.width
-    height = world.height
+    width = world.size.width
+    height = world.size.height
 
     if black_and_white:
         low = world.temperature_thresholds()[0][1]
@@ -615,8 +615,8 @@ def draw_temperature_levels(world, target, black_and_white=False):
 
 
 def draw_biome(world, target):
-    width = world.width
-    height = world.height
+    width = world.size.width
+    height = world.size.height
 
     biome = world.layers['biome'].data
 
@@ -685,8 +685,8 @@ def draw_scatter_plot(world, size, target):
                 target.set_pixel(x, (size - 1) - int(h), (0, 0, 0, 255))
 
     #draw gamma curve
-    curve_gamma = world.gamma_curve
-    curve_bonus = world.curve_offset
+    curve_gamma = world.gamma_value
+    curve_bonus = world.gamma_offset
 
     for x in range(0, size):
         y = (size - 1) * ((numpy.power((float(x) / (size - 1)), curve_gamma) * (1 - curve_bonus)) + curve_bonus)
@@ -694,8 +694,8 @@ def draw_scatter_plot(world, size, target):
 
     #examine all cells in the map and if it is land get the temperature and
     #humidity for the cell.
-    for y in range(world.height):
-        for x in range(world.width):
+    for y in range(world.size.height):
+        for x in range(world.size.width):
             if world.is_land((x, y)):
                 t = world.temperature_at((x, y))
                 p = world.humidity_at((x, y))
@@ -745,14 +745,14 @@ def draw_scatter_plot(world, size, target):
 
 
 def draw_simple_elevation_on_file(world, filename, sea_level):
-    img = PNGWriter.rgba_from_dimensions(world.width, world.height, filename)
+    img = PNGWriter.rgba_from_dimensions(world.size.width, world.size.height, filename)
     draw_simple_elevation(world, sea_level, img)
     img.complete()
     logger.logger.info('Elevation image generated in %s' % filename)
 
 
 def draw_riversmap_on_file(world, filename):
-    img = PNGWriter.rgba_from_dimensions(world.width, world.height, filename)
+    img = PNGWriter.rgba_from_dimensions(world.size.width, world.size.height, filename)
     draw_riversmap(world, img)
     img.complete()
     logger.logger.info('Rivers map generated in %s' % filename)
@@ -765,7 +765,7 @@ def draw_grayscale_heightmap_on_file(world, filename):
 
 
 def draw_elevation_on_file(world, filename, shadow=True):
-    img = PNGWriter.rgba_from_dimensions(world.width, world.height, filename)
+    img = PNGWriter.rgba_from_dimensions(world.size.width, world.size.height, filename)
     draw_elevation(world, shadow, img)
     img.complete()
     logger.logger.info('Elevation image generated in %s' % filename)
@@ -780,27 +780,27 @@ def draw_ocean_on_file(ocean, filename):
 
 
 def draw_precipitation_on_file(world, filename, black_and_white=False):
-    img = PNGWriter.rgba_from_dimensions(world.width, world.height, filename)
+    img = PNGWriter.rgba_from_dimensions(world.size.width, world.size.height, filename)
     draw_precipitation(world, img, black_and_white)
     img.complete()
     logger.logger.info('Precipitation image generated in %s' % filename)
 
 
 def draw_world_on_file(world, filename):
-    img = PNGWriter.rgba_from_dimensions(world.width, world.height, filename)
+    img = PNGWriter.rgba_from_dimensions(world.size.width, world.size.height, filename)
     draw_world(world, img)
     img.complete()
 
 
 def draw_temperature_levels_on_file(world, filename, black_and_white=False):
-    img = PNGWriter.rgba_from_dimensions(world.width, world.height, filename)
+    img = PNGWriter.rgba_from_dimensions(world.size.width, world.size.height, filename)
     draw_temperature_levels(world, img, black_and_white)
     img.complete()
     logger.logger.info('Temperature image generated in %s' % filename)
 
 
 def draw_biome_on_file(world, filename):
-    img = PNGWriter.rgba_from_dimensions(world.width, world.height, filename)
+    img = PNGWriter.rgba_from_dimensions(world.size.width, world.size.height, filename)
     draw_biome(world, img)
     img.complete()
     logger.logger.info('Biome image generated in %s' % filename)
@@ -812,7 +812,7 @@ def draw_scatter_plot_on_file(world, filename):
     logger.logger.info('Scatter plot generated in %s' % filename)
 
 def draw_satellite_on_file(world, filename):
-    img = PNGWriter.rgba_from_dimensions(world.width, world.height, filename)
+    img = PNGWriter.rgba_from_dimensions(world.size.width, world.size.height, filename)
     draw_satellite(world, img)
     img.complete()
     logger.logger.info('Satellite map generated in %s' % filename)
