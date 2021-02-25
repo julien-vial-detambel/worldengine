@@ -120,7 +120,7 @@ generation.',
 
         # exposing worldname
         # TODO: dangerous uses of seed defined above.
-        self.parser.add_argument('-n', '--worldname', dest = 'world_name',
+        self.parser.add_argument('-n', '--worldname', dest = 'name',
                                  metavar = '%s',
                                  help = 'Specify world name used for outputs')
                                  #//default = 'seed_%i' % args.seed)
@@ -144,7 +144,7 @@ how far to proceed in the world generation process. [default=%(default)s]',
 
         # exposing the number of plates to generate
         self.parser.add_argument('-q', '--number-of-plates',
-                                 dest = 'number_of_plates',
+                                 dest = 'n_plates',
                                  metavar = '1 <= %d <= 100',
                                  help = 'Number of plates \
 [default = %(default)s]',

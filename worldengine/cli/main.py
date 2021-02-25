@@ -10,7 +10,7 @@ from worldengine.draw import draw_biome_on_file, draw_ocean_on_file, \
     draw_temperature_levels_on_file, draw_riversmap_on_file, draw_scatter_plot_on_file, \
     draw_satellite_on_file, draw_icecaps_on_file
 from worldengine.imex import export
-from worldengine.model.world import World, Size, GenerationParameters
+from worldengine.model.world import World
 from worldengine.plates import world_gen, generate_plates_simulation
 from worldengine.step import Step
 from worldengine.version import __version__
@@ -25,36 +25,36 @@ VERSION = __version__
 STEPS = 'plates|precipitations|full'
 
 
-def generate_world(world_name, width, height, seed, num_plates, output_dir,
+def generate_world(name, width, height, seed, n_plates, output_dir,
                    step, ocean_level, temperature_ranges, moisture_ranges, axial_tilt,
                    gamma_value=1.25, gamma_offset=.2, fade_borders=True, black_and_white=False):
-    w = world_gen(world_name, width, height, axial_tilt, seed, temperature_ranges, moisture_ranges, num_plates, ocean_level,
+    w = world_gen(name, width, height, axial_tilt, seed, temperature_ranges, moisture_ranges, n_plates, ocean_level,
                   step, gamma_value=gamma_value, gamma_offset=gamma_offset,
                   fade_borders=fade_borders)
 
     # TODO: serialization if temporarly disabled must be reenabled
     # Save data
-    #filename = "%s/%s.world" % (output_dir, world_name)
+    #filename = "%s/%s.world" % (output_dir, name)
     #with open(filename, "wb") as f:
     #    f.write(w.protobuf_serialize())
     #logger.logger.info('World data saved in %s' % filename)
 
     # Generate images
-    filename = '%s/%s_ocean.png' % (output_dir, world_name)
+    filename = '%s/%s_ocean.png' % (output_dir, name)
     draw_ocean_on_file(w.layers['ocean'].data, filename)
 
     if step.include_precipitations:
-        filename = '%s/%s_precipitation.png' % (output_dir, world_name)
+        filename = '%s/%s_precipitation.png' % (output_dir, name)
         draw_precipitation_on_file(w, filename, black_and_white)
 
-        filename = '%s/%s_temperature.png' % (output_dir, world_name)
+        filename = '%s/%s_temperature.png' % (output_dir, name)
         draw_temperature_levels_on_file(w, filename, black_and_white)
 
     if step.include_biome:
-        filename = '%s/%s_biome.png' % (output_dir, world_name)
+        filename = '%s/%s_biome.png' % (output_dir, name)
         draw_biome_on_file(w, filename)
 
-    filename = '%s/%s_elevation.png' % (output_dir, world_name)
+    filename = '%s/%s_elevation.png' % (output_dir, name)
     sea_level = w.sea_level()
     draw_simple_elevation_on_file(w, filename, sea_level=sea_level)
     return w
@@ -104,40 +104,40 @@ def main():
     numpy.random.seed(args.seed)
 
     # defining world name
-    if not args.world_name:
-        args.world_name = 'seed_%i' % args.seed
+    if not args.name:
+        args.name = 'seed_%i' % args.seed
 
     step = check_step(args.step)
 
     logger.logger.debug('generation starting (it could take a few minutes) ...')
 
     """world = World(args.name, Size(args.width, args.height), seed, axial_tilt,
-                  GenerationParameters(num_plates, ocean_level, step),
+                  GenerationParameters(n_plates, ocean_level, step),
                   temps, humids, gamma_value, gamma_offset)"""
 
-    #world = World(args.world_name, args.width, args.height, args.seed, )
+    #world = World(args.name, args.width, args.height, args.seed, args.axial_tilt, args.n_plates, args.ocean_level, step)
 
-    world = generate_world(args.world_name, args.width, args.height,
-                           args.seed, args.number_of_plates, args.output_dir,
+    world = generate_world(args.name, args.width, args.height,
+                           args.seed, args.n_plates, args.output_dir,
                            step, args.ocean_level, args.temperature_ranges,
                            args.moisture_ranges, args.axial_tilt,
                            gamma_value=args.gamma_value, gamma_offset=args.gamma_offset,
                            fade_borders=args.fade_borders, black_and_white=args.black_and_white)
     if args.grayscale_heightmap:
         generate_grayscale_heightmap(world,
-                                     '%s/%s_grayscale.png' % (args.output_dir, world_name))
+                                     '%s/%s_grayscale.png' % (args.output_dir, name))
     if args.rivers_map:
         generate_rivers_map(world,
-                            '%s/%s_rivers.png' % (args.output_dir, world_name))
+                            '%s/%s_rivers.png' % (args.output_dir, name))
     if args.scatter_plot:
         draw_scatter_plot(world,
-                          '%s/%s_scatter.png' % (args.output_dir, world_name))
+                          '%s/%s_scatter.png' % (args.output_dir, name))
     if args.satelite_map:
         draw_satellite_map(world,
-                           '%s/%s_satellite.png' % (args.output_dir, world_name))
+                           '%s/%s_satellite.png' % (args.output_dir, name))
     if args.icecaps_map:
         draw_icecaps_map(world,
-                         '%s/%s_icecaps.png' % (args.output_dir, world_name))
+                         '%s/%s_icecaps.png' % (args.output_dir, name))
 
     logger.logger.debug('... generation done')
 

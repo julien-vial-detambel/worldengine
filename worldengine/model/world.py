@@ -11,20 +11,6 @@ from worldengine.version import __version__
 
 Size = namedtuple('Size', ['width', 'height'])
 
-class GenerationParameters(object):
-
-    def __init__(self, n_plates, ocean_level, step):
-        self.n_plates = n_plates
-        self.ocean_level = ocean_level
-        self.step = step
-
-    def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            return self.__dict__ == other.__dict__
-        else:
-            return False
-
-
 class Layer(object):
 
     def __init__(self, data):
@@ -78,32 +64,29 @@ class World(object):
 
     def __init__(self,
                  name,
-                 size,
+                 width,
+                 height,
                  seed,
                  axial_tilt,
-                 generation_params,
+                 n_plates,
+                 ocean_level,
+                 step,
                  temperature_ranges,
                  moisture_ranges,
                  gamma_value,
                  gamma_offset):
         self.name = name
-        self.size = size
+        self.size = Size(width, height)
         self.seed = seed
         self.temperature_ranges = temperature_ranges
         self.moisture_ranges = moisture_ranges
         self.gamma_value = gamma_value
         self.gamma_offset = gamma_offset
         self.axial_tilt = axial_tilt
-
-        self.generation_params = generation_params
-
+        self.n_plates = n_plates
+        self.ocean_level = ocean_level
+        self.step = step
         self.layers = {}
-
-        # Deprecated
-        self.n_plates = generation_params.n_plates
-        self.step = generation_params.step
-        self.ocean_level = generation_params.ocean_level
-
     #
     # General methods
     #
