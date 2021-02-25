@@ -29,8 +29,8 @@ def generate_plates_simulation(seed, width, height, axial_tilt, sea_level=0.65,
     hm = platec.get_heightmap(p)
     pm = platec.get_platesmap(p)
     elapsed_time = time.time() - start_time
-    logger.logger.debug('...plates.generate_plates_simulation() complete. ' +
-              'Elapsed time ' + str(elapsed_time) + ' seconds.')
+    logger.logger.debug('...plates.generate_plates_simulation() complete. \
+Elapsed time {} seconds.'.format(elapsed_time))
     return hm, pm
 
 
@@ -60,22 +60,21 @@ def world_gen(name, width, height, axial_tilt, seed, temps=[.874, .765, .594, .4
 
     center_land(world)
     elapsed_time = time.time() - start_time
-    logger.logger.debug('...plates.world_gen: set_elevation, set_plates, ' +
-                       'center_land complete. Elapsed time ' +
-                       str(elapsed_time) + ' seconds.')
+    logger.logger.debug('...plates.world_gen: set_elevation, set_plates, \
+center_land complete. Elapsed time {} seconds.'.format(elapsed_time))
 
     start_time = time.time()
     add_noise_to_elevation(world, numpy.random.randint(0, 4096))  # uses the global RNG; this is the very first call to said RNG - should that change, this needs to be taken care of
     elapsed_time = time.time() - start_time
-    logger.logger.debug('...plates.world_gen: elevation noise added. Elapsed ' +
-                       'time ' + str(elapsed_time) + ' seconds.')
+    logger.logger.debug('...plates.world_gen: elevation noise added. Elapsed \
+time {} seconds.'.format(elapsed_time))
 
     start_time = time.time()
     if fade_borders:
         place_oceans_at_map_borders(world)
     initialize_ocean_and_thresholds(world)
     elapsed_time = time.time() - start_time
-    logger.logger.debug('...plates.world_gen: oceans initialized. Elapsed ' +
-                       'time ' + str(elapsed_time) + ' seconds.')
+    logger.logger.debug('...plates.world_gen: oceans initialized. Elapsed \
+time {} seconds.'.format(elapsed_time))
 
     return generate_world(world, step)

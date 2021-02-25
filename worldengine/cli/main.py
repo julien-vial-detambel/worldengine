@@ -34,8 +34,8 @@ def generate_world(world_name, width, height, seed, num_plates, output_dir,
 
     # TODO: serialization if temporarly disabled must be reenabled
     # Save data
-    # filename = "%s/%s.world" % (output_dir, world_name)
-    # with open(filename, "wb") as f:
+    #filename = "%s/%s.world" % (output_dir, world_name)
+    #with open(filename, "wb") as f:
     #    f.write(w.protobuf_serialize())
     #logger.logger.info('World data saved in %s' % filename)
 
@@ -98,7 +98,7 @@ def main():
     args = parser.parse_args()
 
     # logging cli arguments on debug
-    logger.logger.debug('cli args: ' + str(vars(args)))
+    logger.logger.debug('cli args: {}'.format(vars(args)))
 
     # applying seed for numpy pseudo random seed
     numpy.random.seed(args.seed)
@@ -121,7 +121,7 @@ def main():
                            args.seed, args.number_of_plates, args.output_dir,
                            step, args.ocean_level, args.temperature_ranges,
                            args.moisture_ranges, args.axial_tilt,
-                           gamma_value=args.gv, gamma_offset=args.go,
+                           gamma_value=args.gamma_value, gamma_offset=args.gamma_offset,
                            fade_borders=args.fade_borders, black_and_white=args.black_and_white)
     if args.grayscale_heightmap:
         generate_grayscale_heightmap(world,

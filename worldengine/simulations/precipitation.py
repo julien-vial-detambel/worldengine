@@ -24,8 +24,8 @@ class PrecipitationSimulation(object):
         ]
         world.precipitation = (pre_calculated, ths)
         elapsed_time = time.time() - start_time
-        logger.logger.debug('...precipitations calculated. Elapsed time' +
-                           str(elapsed_time) + 'seconds.')
+        logger.logger.debug('...precipitations calculated. Elapsed time {} \
+seconds.'.format(elapsed_time))
 
     @staticmethod
     def _calculate(seed, world):

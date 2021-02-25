@@ -258,9 +258,9 @@ def generate_world(w, step):
     cl_sorted = sorted(biome_cm, key=biome_cm.get, reverse=True)
     for cl in cl_sorted:
         count = biome_cm[cl]
-        distrib_str += '\n%s = %.3f%%' % (str(cl), float(count) / sum(biome_cm.values()) * 100)
+        distrib_str += '\n{:<30} = {:.3f}%'.format(str(cl), float(count) / sum(biome_cm.values()) * 100)
         if cl != 'ocean':
-            distrib_str += ' (%.3f%% emerged surface)' % (float(count) / (sum(biome_cm.values()) - biome_cm['ocean']) * 100)
+            distrib_str += ' ({:.3f}% emerged surface)'.format(float(count) / (sum(biome_cm.values()) - biome_cm['ocean']) * 100)
     logger.logger.debug(distrib_str)
 
     IcecapSimulation().execute(w, seed_dict['IcecapSimulation'])  # makes use of temperature-map
