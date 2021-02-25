@@ -9,9 +9,10 @@ class TemperatureSimulation(object):
 
     @staticmethod
     def is_applicable(world):
-        return not world.has_temperature()
+        return not 'temperature' in world.layers
 
     def execute(self, world, seed):
+        assert TemperatureSimulation.is_applicable(world)
         e = world.layers['elevation'].data
         ml = world.start_mountain_th()  # returns how many percent of the world are mountains
         ocean = world.layers['ocean'].data

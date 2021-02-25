@@ -71,8 +71,8 @@ message World {
     // Biome
     optional IntegerMatrix biome         = 13;
 
-    // Humidity
-    optional DoubleMatrixWithQuantiles humidity = 14;
+    // Moisture
+    optional DoubleMatrixWithQuantiles moisture = 14;
 
     // Irrigation
     optional DoubleMatrix irrigation  = 15;

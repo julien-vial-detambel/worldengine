@@ -7,9 +7,10 @@ class PermeabilitySimulation(object):
 
     @staticmethod
     def is_applicable(world):
-        return not world.has_permeability()
+        return not 'permeability' in world.layers
 
     def execute(self, world, seed):
+        assert PermeabilitySimulation.is_applicable(world)
         perm = self._calculate(seed, world.size.width, world.size.height)
         ocean = world.layers['ocean'].data
         perm_th = [

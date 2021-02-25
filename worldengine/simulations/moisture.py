@@ -2,16 +2,17 @@ from worldengine.simulations.basic import find_threshold_f
 import numpy
 
 
-class HumiditySimulation(object):
+class MoistureSimulation(object):
     @staticmethod
     def is_applicable(world):
-        return world.has_precipitations() and world.has_irrigation() and (
-            not world.has_humidity())
+        return {'precipitation', 'irrigation'} <= set(world.layers.keys()) and (
+            not 'moisture' in world.layers)
 
     def execute(self, world, seed):
+        assert MoistureSimulation.is_applicable(world)
         assert seed is not None
         data, quantiles = self._calculate(world)
-        world.humidity = (data, quantiles)
+        world.moisture = (data, quantiles)
 
     @staticmethod
     def _calculate(world):

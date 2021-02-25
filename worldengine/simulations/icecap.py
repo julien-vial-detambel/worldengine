@@ -11,9 +11,10 @@ class IcecapSimulation(object):
 
     @staticmethod
     def is_applicable(world):
-        return world.has_ocean() and world.has_temperature()
+        return {'ocean', 'temperature'} <= set(world.layers.keys())
 
     def execute(self, world, seed):
+        assert IcecapSimulation.is_applicable(world)
         world.icecap = self._calculate(world, seed)
 
     @staticmethod

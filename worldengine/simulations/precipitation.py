@@ -11,9 +11,10 @@ class PrecipitationSimulation(object):
 
     @staticmethod
     def is_applicable(world):
-        return not world.has_precipitations()
+        return not 'precipitation' in world.layers
 
     def execute(self, world, seed):
+        assert PrecipitationSimulation.is_applicable(world)
         start_time = time.time()
         pre_calculated = self._calculate(seed, world)
         ocean = world.layers['ocean'].data

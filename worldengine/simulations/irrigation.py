@@ -3,9 +3,10 @@ import numpy
 class IrrigationSimulation(object):
     @staticmethod
     def is_applicable(world):
-        return world.has_watermap() and (not world.has_irrigation())
+        return 'watermap' in world.layers and ('irrigation' not in world.layers)
 
     def execute(self, world, seed):
+        assert IrrigationSimulation.is_applicable(world)
         world.irrigation = self._calculate(world)
 
     @staticmethod
@@ -27,7 +28,7 @@ class IrrigationSimulation(object):
 
         #create output array
         values = numpy.zeros((height, width), dtype=float)
-        
+
         it_all = numpy.nditer(values, flags=['multi_index'], op_flags=['readonly'])
         while not it_all.finished:
             x = it_all.multi_index[1]
@@ -39,7 +40,7 @@ class IrrigationSimulation(object):
                 #coordinates used for the logs-slice
                 tl_l = (max(radius - x, 0)        , max(radius - y, 0))
                 br_l = (min(radius - x + width - 1, 2 * radius), min(radius - y + height - 1, 2 * radius))
-                
+
                 #extract the necessary parts of the arrays
                 logs_relevant = logs[tl_l[1]:br_l[1]+1, tl_l[0]:br_l[0]+1]
 

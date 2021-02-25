@@ -78,9 +78,9 @@ exactly 7 floating point values')
             moisture_ranges[x] = 1 - float(moisture_ranges[x])
 
         if moisture_ranges != sorted(moisture_ranges, reverse = True):
-            logger.logger.warning('Humidity array not in ascending order')
+            logger.logger.warning('Moisture array not in ascending order')
         if numpy.amin(moisture_ranges) < 0:
-            logger.logger.warning('Maximum value in humidity array greater than 1')
+            logger.logger.warning('Maximum value in moisture array greater than 1')
         if numpy.amax(moisture_ranges) > 1:
             logger.logger.warning('Minimum value in temperature array less than 0')
 
@@ -155,9 +155,6 @@ generation.',
         generation_args = self.parser.add_argument_group(
             "Generate Options", 'These options are only useful in plate and \
 world modes')
-
-        generation_args.add_argument('-r', '--rivers', dest='rivers_map',
-                                action="store_true", help="generate rivers map")
 
         generation_args.add_argument('-gs', '--grayscale-heightmap',
                                 dest='grayscale_heightmap', action="store_true",

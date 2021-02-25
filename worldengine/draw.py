@@ -328,14 +328,13 @@ def draw_simple_elevation(world, sea_level, target):
     e = world.layers['elevation'].data
     c = numpy.empty(e.shape, dtype=numpy.float)
 
-    has_ocean = not (sea_level is None or world.layers['ocean'].data is None or not world.layers['ocean'].data.any())  # or 'not any ocean'
-    mask_land = numpy.ma.array(e, mask=world.layers['ocean'].data if has_ocean else False)  # only land
+    mask_land = numpy.ma.array(e, mask=world.layers['ocean'].data if not (sea_level is None or world.layers['ocean'].data is None or not world.layers['ocean'].data.any()) else False)  # only land
 
     min_elev_land = mask_land.min()
     max_elev_land = mask_land.max()
     elev_delta_land = (max_elev_land - min_elev_land) / 11.0
 
-    if has_ocean:
+    if not (sea_level is None or world.layers['ocean'].data is None or not world.layers['ocean'].data.any()):
         land = numpy.logical_not(world.layers['ocean'].data)
         mask_ocean = numpy.ma.array(e, mask=land)  # only ocean
         min_elev_sea = mask_ocean.min()
@@ -529,7 +528,7 @@ def draw_ocean(ocean, target):
 
 
 def draw_precipitation(world, target, black_and_white=False):
-    # FIXME we are drawing humidity, not precipitations
+    # FIXME we are drawing moisture, not precipitations
     width = world.size.width
     height = world.size.height
 
@@ -547,21 +546,21 @@ def draw_precipitation(world, target, black_and_white=False):
     else:
         for y in range(height):
             for x in range(width):
-                if world.is_humidity_superarid((x, y)):
+                if world.is_moisture_superarid((x, y)):
                     target.set_pixel(x, y, (0, 32, 32, 255))
-                elif world.is_humidity_perarid((x, y)):
+                elif world.is_moisture_perarid((x, y)):
                     target.set_pixel(x, y, (0, 64, 64, 255))
-                elif world.is_humidity_arid((x, y)):
+                elif world.is_moisture_arid((x, y)):
                     target.set_pixel(x, y, (0, 96, 96, 255))
-                elif world.is_humidity_semiarid((x, y)):
+                elif world.is_moisture_semiarid((x, y)):
                     target.set_pixel(x, y, (0, 128, 128, 255))
-                elif world.is_humidity_subhumid((x, y)):
+                elif world.is_moisture_subhumid((x, y)):
                     target.set_pixel(x, y, (0, 160, 160, 255))
-                elif world.is_humidity_humid((x, y)):
+                elif world.is_moisture_humid((x, y)):
                     target.set_pixel(x, y, (0, 192, 192, 255))
-                elif world.is_humidity_perhumid((x, y)):
+                elif world.is_moisture_perhumid((x, y)):
                     target.set_pixel(x, y, (0, 224, 224, 255))
-                elif world.is_humidity_superhumid((x, y)):
+                elif world.is_moisture_superhumid((x, y)):
                     target.set_pixel(x, y, (0, 255, 255, 255))
 
 
@@ -631,16 +630,16 @@ def draw_scatter_plot(world, size, target):
         on disk or a canvas part of a GUI)
     """
 
-    #Find min and max values of humidity and temperature on land so we can
-    #normalize temperature and humidity to the chart
-    humid = numpy.ma.masked_array(world.layers['humidity'].data, mask=world.layers['ocean'].data)
+    #Find min and max values of moisture and temperature on land so we can
+    #normalize temperature and moisture to the chart
+    humid = numpy.ma.masked_array(world.layers['moisture'].data, mask=world.layers['ocean'].data)
     temp = numpy.ma.masked_array(world.layers['temperature'].data, mask=world.layers['ocean'].data)
-    min_humidity = humid.min()
-    max_humidity = humid.max()
+    min_moisture = humid.min()
+    max_moisture = humid.max()
     min_temperature = temp.min()
     max_temperature = temp.max()
     temperature_delta = max_temperature - min_temperature
-    humidity_delta = max_humidity - min_humidity
+    moisture_delta = max_moisture - min_moisture
 
     #set all pixels white
     for y in range(0, size):
@@ -651,9 +650,9 @@ def draw_scatter_plot(world, size, target):
     h_values = ['62', '50', '37', '25', '12']
     t_values = [   0,    1,    2,   3,    5 ]
     for loop in range(0, 5):
-        h_min = (size - 1) * ((world.layers['humidity'].quantiles[h_values[loop]] - min_humidity) / humidity_delta)
+        h_min = (size - 1) * ((world.layers['moisture'].quantiles[h_values[loop]] - min_moisture) / moisture_delta)
         if loop != 4:
-            h_max = (size - 1) * ((world.layers['humidity'].quantiles[h_values[loop + 1]] - min_humidity) / humidity_delta)
+            h_max = (size - 1) * ((world.layers['moisture'].quantiles[h_values[loop + 1]] - min_moisture) / moisture_delta)
         else:
             h_max = size
         v_max = (size - 1) * ((world.layers['temperature'].thresholds[t_values[loop]][1] - min_temperature) / temperature_delta)
@@ -679,7 +678,7 @@ def draw_scatter_plot(world, size, target):
                 target.set_pixel(int(v), (size - 1) - y, (0, 0, 0, 255))
     ranges = ['87', '75', '62', '50', '37', '25', '12']
     for p in ranges:
-        h = (size - 1) * ((world.layers['humidity'].quantiles[p] - min_humidity) / humidity_delta)
+        h = (size - 1) * ((world.layers['moisture'].quantiles[p] - min_moisture) / moisture_delta)
         if 0 < h < size:
             for x in range(0, size):
                 target.set_pixel(x, (size - 1) - int(h), (0, 0, 0, 255))
@@ -693,14 +692,14 @@ def draw_scatter_plot(world, size, target):
         target.set_pixel(x, (size - 1) - int(y), (255, 0, 0, 255))
 
     #examine all cells in the map and if it is land get the temperature and
-    #humidity for the cell.
+    #moisture for the cell.
     for y in range(world.size.height):
         for x in range(world.size.width):
             if world.is_land((x, y)):
                 t = world.temperature_at((x, y))
-                p = world.humidity_at((x, y))
+                p = world.moisture_at((x, y))
 
-    #get red and blue values depending on temperature and humidity
+    #get red and blue values depending on temperature and moisture
                 if world.is_temperature_polar((x, y)):
                     r = 0
                 elif world.is_temperature_alpine((x, y)):
@@ -715,26 +714,26 @@ def draw_scatter_plot(world, size, target):
                     r = 213
                 elif world.is_temperature_tropical((x, y)):
                     r = 255
-                if world.is_humidity_superarid((x, y)):
+                if world.is_moisture_superarid((x, y)):
                     b = 32
-                elif world.is_humidity_perarid((x, y)):
+                elif world.is_moisture_perarid((x, y)):
                     b = 64
-                elif world.is_humidity_arid((x, y)):
+                elif world.is_moisture_arid((x, y)):
                     b = 96
-                elif world.is_humidity_semiarid((x, y)):
+                elif world.is_moisture_semiarid((x, y)):
                     b = 128
-                elif world.is_humidity_subhumid((x, y)):
+                elif world.is_moisture_subhumid((x, y)):
                     b = 160
-                elif world.is_humidity_humid((x, y)):
+                elif world.is_moisture_humid((x, y)):
                     b = 192
-                elif world.is_humidity_perhumid((x, y)):
+                elif world.is_moisture_perhumid((x, y)):
                     b = 224
-                elif world.is_humidity_superhumid((x, y)):
+                elif world.is_moisture_superhumid((x, y)):
                     b = 255
 
-    #calculate x and y position based on normalized temperature and humidity
+    #calculate x and y position based on normalized temperature and moisture
                 nx = (size - 1) * ((t - min_temperature) / temperature_delta)
-                ny = (size - 1) * ((p - min_humidity) / humidity_delta)
+                ny = (size - 1) * ((p - min_moisture) / moisture_delta)
 
                 target.set_pixel(int(nx), (size - 1) - int(ny), (r, 128, b, 255))
 

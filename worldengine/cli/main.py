@@ -104,19 +104,19 @@ def main():
                            fade_borders=args.fade_borders, black_and_white=args.black_and_white)
     if args.grayscale_heightmap:
         generate_grayscale_heightmap(world,
-                                     '%s/%s_grayscale.png' % (args.output_dir, name))
-    if args.rivers_map:
-        generate_rivers_map(world,
-                            '%s/%s_rivers.png' % (args.output_dir, name))
+                                     '%s/%s_grayscale.png' % (args.output_dir, args.name))
+    generate_rivers_map(world,
+                        '%s/%s_rivers.png' % (args.output_dir, args.name))
+
     if args.scatter_plot:
         draw_scatter_plot(world,
-                          '%s/%s_scatter.png' % (args.output_dir, name))
+                          '%s/%s_scatter.png' % (args.output_dir, args.name))
     if args.satelite_map:
         draw_satellite_map(world,
-                           '%s/%s_satellite.png' % (args.output_dir, name))
+                           '%s/%s_satellite.png' % (args.output_dir, args.name))
     if args.icecaps_map:
         draw_icecaps_map(world,
-                         '%s/%s_icecaps.png' % (args.output_dir, name))
+                         '%s/%s_icecaps.png' % (args.output_dir, args.name))
 
     logger.logger.debug('... generation done')
 

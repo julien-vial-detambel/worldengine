@@ -5,7 +5,7 @@ from noise import snoise2
 from worldengine.simulations.basic import find_threshold_f
 from worldengine.simulations.hydrology import WatermapSimulation
 from worldengine.simulations.irrigation import IrrigationSimulation
-from worldengine.simulations.humidity import HumiditySimulation
+from worldengine.simulations.moisture import MoistureSimulation
 from worldengine.simulations.temperature import TemperatureSimulation
 from worldengine.simulations.permeability import PermeabilitySimulation
 from worldengine.simulations.erosion import ErosionSimulation
@@ -217,7 +217,7 @@ def generate_world(w):
                  'WatermapSimulation':      sub_seeds[ 2],
                  'IrrigationSimulation':    sub_seeds[ 3],
                  'TemperatureSimulation':   sub_seeds[ 4],
-                 'HumiditySimulation':      sub_seeds[ 5],
+                 'MoistureSimulation':      sub_seeds[ 5],
                  'PermeabilitySimulation':  sub_seeds[ 6],
                  'BiomeSimulation':         sub_seeds[ 7],
                  'IcecapSimulation':        sub_seeds[ 8],
@@ -236,7 +236,7 @@ def generate_world(w):
 
     # FIXME: create setters
     IrrigationSimulation().execute(w, seed_dict['IrrigationSimulation'])  # seed not currently used
-    HumiditySimulation().execute(w, seed_dict['HumiditySimulation'])  # seed not currently used
+    MoistureSimulation().execute(w, seed_dict['MoistureSimulation'])  # seed not currently used
 
     PermeabilitySimulation().execute(w, seed_dict['PermeabilitySimulation'])
 

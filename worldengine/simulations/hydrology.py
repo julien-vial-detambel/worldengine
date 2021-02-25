@@ -6,9 +6,10 @@ class WatermapSimulation(object):
 
     @staticmethod
     def is_applicable(world):
-        return world.has_precipitations() and (not world.has_watermap())
+        return 'precipitation' in world.layers and (not 'watermap' in world.layers)
 
     def execute(self, world, seed):
+        assert WatermapSimulation.is_applicable(world)
         assert seed is not None
         data, thresholds = self._watermap(world, 20000)
         world.watermap = (data, thresholds)
@@ -59,7 +60,7 @@ class WatermapSimulation(object):
         _watermap_data = numpy.zeros((world.size.height, world.size.width), dtype=float)
 
         # This indirectly calls the global rng.
-        # We want different implementations of _watermap 
+        # We want different implementations of _watermap
         # and internally called functions (especially random_land)
         # to show the same rng behaviour and not contamine the state of the global rng
         # should anyone else happen to rely on it.

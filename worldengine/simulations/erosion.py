@@ -33,9 +33,11 @@ class ErosionSimulation(object):
         self.wrap = True
 
     def is_applicable(self, world):
-        return world.has_precipitations()
+        return 'precipitation' in world.layers
 
     def execute(self, world, seed):
+        assert self.is_applicable(world)
+
         water_flow = numpy.zeros((world.size.height, world.size.width))
         water_path = numpy.zeros((world.size.height, world.size.width), dtype=int)
         river_list = []
